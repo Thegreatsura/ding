@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/toasts.svg" alt="Four Ding toasts: success, error with a retry button, a message with an avatar, and an upload with a progress bar" width="640" />
+  <img src="assets/ding-demo.gif" alt="A progress toast turns into a success toast, then an error toast with a Retry button morphs into a new message" width="660" />
 </p>
 
 ---
