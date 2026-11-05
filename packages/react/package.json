@@ -50,5 +50,7 @@
   ],
   "engines": {
     "node": ">=18"
-  }
+  },
+  "license": "MIT",
+  "author": "Yusuf Cengiz"
 }

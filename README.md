@@ -196,4 +196,4 @@ The docs site lives in `apps/docs`. A machine-readable summary is in [`apps/docs
 
 ## License
 
-Not chosen yet.
+[MIT](LICENSE)
