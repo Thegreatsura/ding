@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="apps/docs/public/ding.svg" alt="Ding mascot" width="180" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/ding-dark.svg" />
+    <img src="assets/ding.svg" alt="Ding mascot" width="180" />
+  </picture>
 </p>
 
 <h1 align="center">Ding</h1>
@@ -7,6 +10,14 @@
 <p align="center">
   Toasts with real spring physics.<br />
   One toast that morphs in place. No dependencies. React, Svelte or plain DOM.
+</p>
+
+<p align="center">
+  <a href="https://ding.yusufcengiz.dev">Live demo and docs</a>
+</p>
+
+<p align="center">
+  <img src="assets/toasts.svg" alt="Four Ding toasts: success, error with a retry button, a message with an avatar, and an upload with a progress bar" width="640" />
 </p>
 
 ---
