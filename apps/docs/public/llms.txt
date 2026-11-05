@@ -1,0 +1,48 @@
+# Ding
+
+> Spring-physics toast notifications for React, Svelte 5 and plain DOM. Zero dependencies. Styles are injected from JS, so there is no stylesheet to import. Human docs: /docs.html
+
+## Install
+
+- React: `npm i ding-react`
+- Svelte 5: `npm i ding-svelte`
+- Vanilla: `npm i ding`
+
+## Setup
+
+Render the toaster once, near the root.
+
+- React: `import { Toaster, toast } from 'ding-react'` then `<Toaster position="top-center" theme="system" />`
+- Svelte 5: `import { Toaster, toast } from 'ding-svelte'` then `<Toaster position="top-center" theme="system" />`
+- Vanilla: `import { mountToaster, toast } from 'ding'` then `const unmount = mountToaster({ position, theme })`
+
+## API
+
+All calls return the toast id. Import `toast` from the package.
+
+- `toast.success(title, options?)`, `toast.error`, `toast.warning`, `toast.info`, `toast.loading`
+- `toast.promise(promise, { loading, success, error })` morphs one toast from loading to the result
+- `toast.update(id, patch)` changes a live toast in place. A patch may set title, description, type, duration, progress, action, secondary, meta, image. `null` removes action, secondary, meta, image and progress.
+- `toast.dismiss(id?)` closes one toast, or all
+- `toast.configure({ position, theme, sound, volume })`
+
+Options: `description`, `action { label, onClick }`, `secondary { label, onClick }`, `image` (avatar URL), `meta` (small trailing text), `progress` (0 to 1), `duration` (ms, 0 stays until dismissed), `id`.
+
+`onClick` may return a patch. The toast then morphs in place instead of closing. A returned patch removes the buttons unless it names them again.
+
+Positions: top-left, top-center, top-right, bottom-left, bottom-center, bottom-right. Themes: system, light, dark.
+
+## Sound
+
+Off by default. `toast.configure({ sound: true, volume: 0.5 })` plays a soft built-in mallet tone per status, no audio files (success rises, error falls, warning double-taps, info is one note). Volume is 0 to 1. Loading is silent. Browsers keep audio locked until a click or key press, so the first sound must follow one.
+
+To use another sound library, pass a function: `toast.configure({ sound: (type) => play(type) })`. It is called with `success`, `error`, `warning`, `info` or `loading`, once per new toast and once per status change. Progress updates make no sound.
+
+## Behavior
+
+- One toast is shown at a time. A new call morphs the live toast instead of stacking. Only the newest caller can update it, so a late result from an older call is ignored.
+- Repeating an identical toast adds a counter (×2) instead of a new toast.
+- Errors, loading and toasts with an action stay until dismissed. Other toasts close after 5 seconds. Hover and keyboard focus pause the timer.
+- Escape dismisses. Alt+T moves focus into the toast.
+- Messages go through persistent live regions: errors assertive, everything else polite.
+- Respects prefers-reduced-motion. Mirrors in right-to-left pages.

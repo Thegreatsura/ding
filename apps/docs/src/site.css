@@ -1,0 +1,108 @@
+:root{color-scheme:light;--ink:#111;--mute:#666;--line:#e6e6e6;--soft:#f4f4f4;--r:999px;--ease:cubic-bezier(.2,0,0,1)}
+*{box-sizing:border-box}
+html{scroll-padding-block-start:72px}
+body{margin:0;background:#fff;color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.page{max-width:720px;margin:0 auto;padding:0 20px 48px;min-height:100dvh;display:flex;flex-direction:column}
+main{display:grid;gap:40px;padding-top:56px;flex:1}
+.skip{position:absolute;inset-inline-start:12px;top:-60px;padding:8px 14px;background:var(--ink);color:#fff;border-radius:var(--r);font-size:13px;text-decoration:none;z-index:2}
+.skip:focus{top:12px}
+.bar{display:flex;align-items:center;justify-content:flex-end;padding:20px 0}
+.logo{display:inline-flex;align-items:center;gap:8px;font-weight:650;letter-spacing:-.01em}
+.logo{gap:1px;padding:6px 0;color:var(--ink);font-size:20px;font-weight:700;letter-spacing:-.03em;text-decoration:none}
+.logo::after{content:'';width:7px;height:7px;margin-top:10px;border-radius:50%;background:#fca020;transition:scale .3s var(--ease)}
+@media (hover:hover){.logo:hover::after{scale:1.5}}
+.logo img{display:block}
+.nav{display:flex;align-items:center;gap:8px}
+.navlink{padding:8px 12px;border-radius:var(--r);color:var(--mute);font-size:13px;text-decoration:none;transition:color .15s ease-out,background-color .15s ease-out}
+.navlink[aria-current]{color:var(--ink)}
+.gh{display:inline-grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid var(--line);border-radius:var(--r);color:var(--ink);font-size:13px;text-decoration:none;transition:background-color .15s ease-out,scale .15s ease-out}
+.gh:active{scale:.96}
+.hero{position:relative;display:grid;gap:16px;justify-items:start}
+.mascot{width:132px;height:114px;padding:0;border:0;background:transparent;border-radius:24px}
+.mchar{display:block;width:100%;height:100%;overflow:visible;pointer-events:none}
+.mchar *{transform-box:fill-box}
+.m-hop,.m-bodyg,.m-shadow,.m-eye,.m-dings,.m-dust{transform-origin:50% 100%}
+.m-eye{transform-origin:50% 50%;translate:var(--ex,0) var(--ey,0);transition:translate .18s ease-out}
+.m-bell{transform-origin:55% 90%}
+@media (min-width:640px){.mascot{position:absolute;inset-inline-end:0;top:0;width:230px;height:199px;inset-block-start:-12px}.hero>:not(.mascot){max-width:calc(100% - 250px)}.hero>:not(.mascot):is(.install,.actions){max-width:none}}
+h1{margin:0;font-size:clamp(28px,5.5vw,38px);line-height:1.1;font-weight:700;letter-spacing:-.03em;text-wrap:balance}
+.tag{margin:0;max-width:40ch;color:var(--mute);font-size:15px;line-height:1.55;text-wrap:balance}
+.hero h1+.tag{margin-top:-4px}
+.hero{gap:20px}
+.hero .actions{margin-top:4px}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.install{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.cmd{display:flex;align-items:center;gap:12px;padding:4px 4px 4px 16px;border:1px solid var(--line);border-radius:var(--r);font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+.codes{display:grid}
+.codes code{grid-area:1/1;opacity:0;translate:0 4px;filter:blur(3px);transition:opacity .25s ease-out,translate .25s var(--ease),filter .25s ease-out;pointer-events:none}
+.codes code.on{opacity:1;translate:0;filter:none;pointer-events:auto}
+.copy{transition:background-color .2s ease-out,scale .15s ease-out}
+.primary{padding:10px 22px;font-weight:600;background:var(--ink);border-color:var(--ink);color:#fff}
+.copy{padding:6px 14px;font-size:12px;font-weight:600;min-width:68px;background:var(--ink);border-color:var(--ink);color:#fff}
+.quiet{color:var(--mute);font-size:13px;border:0;background:transparent;padding:4px 0;text-underline-offset:3px}
+.seg{position:relative;display:inline-flex;padding:3px;background:var(--soft);border-radius:var(--r)}
+.seg .ind{position:absolute;top:3px;bottom:3px;left:0;width:var(--w,0);translate:var(--x,0) 0;background:#fff;border-radius:var(--r);box-shadow:0 0 0 1px var(--line),0 1px 2px rgb(0 0 0/.06)}
+.seg.ready .ind{transition:translate .32s var(--ease),width .32s var(--ease),background-color .2s ease-out}
+.seg button{position:relative;border:0;background:transparent;color:var(--mute);padding:5px 12px;font-size:13px;transition:color .2s ease-out,scale .15s ease-out}
+.seg button[aria-pressed=true]{color:var(--ink)}
+.settings{display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px;padding:14px 16px;background:var(--soft);border-radius:16px}
+.settings .seg{background:#fff;box-shadow:0 0 0 1px var(--line)}
+.settings .seg .ind{background:var(--ink);box-shadow:none}
+.settings .seg button[aria-pressed=true]{color:#fff}
+.field{display:flex;align-items:center;gap:10px}
+.lbl{font-size:13px;color:var(--mute)}
+.picker{display:grid;grid-template-columns:repeat(3,22px);gap:4px;padding:5px;background:#fff;box-shadow:0 0 0 1px var(--line);border-radius:10px}
+.dot{width:22px;height:22px;padding:0;border-radius:5px;border:0;background:var(--soft)}
+.dot[aria-pressed=true]{background:var(--ink)}
+.settings .quiet{margin-inline-start:auto}
+.group{display:grid;grid-template-columns:88px 1fr;gap:12px;align-items:start}
+h2{margin:0;padding-top:8px;font-size:13px;font-weight:600;color:var(--mute)}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-size:14px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--line);background:#fff;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:scale .15s ease-out,background-color .15s ease-out,color .15s ease-out,border-color .15s ease-out}
+button:active{scale:.96}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dot{transition:scale .15s ease-out,background-color .15s ease-out}
+.row button.fired{animation:fired .45s ease-out}
+@keyframes fired{from{background:var(--ink);color:#fff;border-color:var(--ink)}}
+a{color:var(--mute)}
+footer{padding-top:40px;font-size:13px;color:var(--mute)}
+footer a{color:var(--ink);text-underline-offset:3px}
+@media (hover:hover){button:hover{background:var(--soft)}.row button:hover{border-color:#cfcfcf}.seg button:hover,.seg button[aria-pressed=true]:hover{background:transparent}.seg button:not([aria-pressed=true]):hover{color:var(--ink)}.copy:hover,.primary:hover{background:#333}.dot[aria-pressed=true]:hover{background:var(--ink)}.dot:not([aria-pressed=true]):hover{scale:1.12}.quiet:hover{background:transparent;color:var(--ink)}.gh:hover{background:var(--soft)}}
+@media (pointer:coarse){.row button,.seg button,.gh,.primary{min-height:40px}.copy{min-height:36px}.dot{width:30px;height:30px}.picker{grid-template-columns:repeat(3,30px)}}
+@media (prefers-reduced-motion:reduce){.codes code{transition:opacity .2s;translate:0;filter:none}}
+@media (prefers-reduced-motion:no-preference){
+.hero,.settings,.group{animation:rise .5s var(--ease) backwards}
+.settings{animation-delay:.06s}.group:nth-of-type(1){animation-delay:.1s}.group:nth-of-type(2){animation-delay:.14s}.group:nth-of-type(3){animation-delay:.18s}.group:nth-of-type(4){animation-delay:.22s}.group:nth-of-type(5){animation-delay:.26s}
+@keyframes rise{from{opacity:0;translate:0 10px}}
+}
+@media (max-width:520px){main{padding-top:32px;gap:32px}.group{grid-template-columns:1fr;gap:6px}h2{padding-top:0}.settings{padding:12px}.settings .quiet{margin-inline-start:0}}
+@media (prefers-reduced-motion:no-preference){
+/* arrival: drops in, lands with a squash */
+.m-hop{animation:m-in .9s var(--ease) .15s backwards}
+.m-shadow{animation:m-shadow-in .9s var(--ease) .15s backwards}
+/* idle: breathing, a slow blink, a bell that barely sways */
+.m-bodyg{animation:m-breathe 3.6s ease-in-out 1.2s infinite}
+.m-shadow{animation-name:m-shadow-in,m-shadow-breathe;animation-duration:.9s,3.6s;animation-delay:.15s,1.2s;animation-iteration-count:1,infinite;animation-timing-function:var(--ease),ease-in-out}
+.m-eye{animation:m-blink 6.5s ease-in-out 2s infinite}
+.m-bell{animation:m-sway 3.6s ease-in-out 1.2s infinite}
+/* hover: the bell gives a small wiggle */
+@media (hover:hover){.mascot:hover .m-bell{animation:m-wiggle .7s var(--ease)}}
+/* click: hop, big bell swing, ding marks, dust on landing */
+.mascot.ring .m-hop{animation:m-hop .8s var(--ease)}
+.mascot.ring .m-shadow{animation:m-shadow-hop .8s var(--ease)}
+.mascot.ring .m-bell{animation:m-swing 1.2s cubic-bezier(.3,0,.2,1) .08s}
+.mascot.ring .m-dings{animation:m-dings .9s var(--ease) .12s}
+.mascot.ring .m-dust{animation:m-dust .5s ease-out .5s}
+}
+@keyframes m-in{0%{translate:0 -60px;opacity:0}55%{translate:0 0;opacity:1;scale:1.05 .92}75%{scale:.98 1.03}100%{scale:1}}
+@keyframes m-shadow-in{0%{scale:.4;opacity:0}55%{scale:1.04;opacity:1}100%{scale:1}}
+@keyframes m-breathe{50%{scale:1.015 1.035}}
+@keyframes m-shadow-breathe{50%{scale:.97 1}}
+@keyframes m-blink{0%,60%,68%,100%{scale:1}63%{scale:1 .1}91%,95%{scale:1}93%,97%{scale:1 .1}}
+@keyframes m-sway{50%{rotate:-2.5deg}}
+@keyframes m-wiggle{25%{rotate:-9deg}50%{rotate:7deg}75%{rotate:-3deg}}
+@keyframes m-hop{0%{scale:1}14%{scale:1.07 .9}38%{translate:0 -30px;scale:.95 1.07}62%{translate:0 0;scale:1.07 .9}80%{scale:.98 1.03}100%{scale:1}}
+@keyframes m-shadow-hop{14%{scale:1.04}38%{scale:.7;opacity:.6}62%{scale:1.06}100%{scale:1}}
+@keyframes m-swing{0%{rotate:0}18%{rotate:-18deg}38%{rotate:14deg}56%{rotate:-9deg}74%{rotate:5deg}90%{rotate:-2deg}100%{rotate:0}}
+@keyframes m-dings{0%{opacity:0;scale:.5;translate:-8px 8px}30%{opacity:1;scale:1.15;translate:3px -3px}100%{opacity:1;scale:1;translate:0 0}}
+@keyframes m-dust{0%{opacity:0;scale:.4}40%{opacity:1;scale:1.2}100%{opacity:1;scale:1}}

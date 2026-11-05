@@ -1,0 +1,17 @@
+{
+  "name": "ding-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "dev": "pnpm --filter docs dev",
+    "test": "pnpm --filter ding test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "svelte-check": "^4.7.8",
+    "tsup": "^9.0.0",
+    "typescript": "^6.0.3"
+  }
+}
