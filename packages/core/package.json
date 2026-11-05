@@ -1,6 +1,6 @@
 {
   "name": "@yusufceng1z/ding",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Framework-agnostic toast engine: spring solver, timers, state machine.",
   "type": "module",
   "sideEffects": false,
@@ -27,6 +27,8 @@
     "test": "node --test src/",
     "typecheck": "tsc -p ."
   },
+  "homepage": "https://ding.yusufcengiz.dev",
+  "bugs": { "url": "https://github.com/YusufCeng1z/ding/issues" },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YusufCeng1z/ding.git",

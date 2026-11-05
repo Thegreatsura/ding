@@ -1,6 +1,6 @@
 {
   "name": "@yusufceng1z/ding-svelte",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "sideEffects": false,
   "svelte": "./dist/index.js",
@@ -31,6 +31,8 @@
     "svelte-check": "^4.7.8"
   },
   "description": "Svelte 5 renderer for Ding spring-physics toasts.",
+  "homepage": "https://ding.yusufcengiz.dev",
+  "bugs": { "url": "https://github.com/YusufCeng1z/ding/issues" },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YusufCeng1z/ding.git",
