@@ -4,17 +4,17 @@
 
 ## Install
 
-- React: `npm i ding-react`
-- Svelte 5: `npm i ding-svelte`
-- Vanilla: `npm i ding`
+- React: `npm i @yusufceng1z/ding-react`
+- Svelte 5: `npm i @yusufceng1z/ding-svelte`
+- Vanilla: `npm i @yusufceng1z/ding`
 
 ## Setup
 
 Render the toaster once, near the root.
 
-- React: `import { Toaster, toast } from 'ding-react'` then `<Toaster position="top-center" theme="system" />`
-- Svelte 5: `import { Toaster, toast } from 'ding-svelte'` then `<Toaster position="top-center" theme="system" />`
-- Vanilla: `import { mountToaster, toast } from 'ding'` then `const unmount = mountToaster({ position, theme })`
+- React: `import { Toaster, toast } from '@yusufceng1z/ding-react'` then `<Toaster position="top-center" theme="system" />`
+- Svelte 5: `import { Toaster, toast } from '@yusufceng1z/ding-svelte'` then `<Toaster position="top-center" theme="system" />`
+- Vanilla: `import { mountToaster, toast } from '@yusufceng1z/ding'` then `const unmount = mountToaster({ position, theme })`
 
 ## API
 

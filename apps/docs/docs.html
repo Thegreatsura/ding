@@ -44,15 +44,15 @@
           <section id="install">
             <h2>Install</h2>
             <p>There is no stylesheet to import: styles are injected from JavaScript.</p>
-            <pre data-for="react"><code>npm i ding-react</code></pre>
-            <pre data-for="svelte"><code>npm i ding-svelte</code></pre>
-            <pre data-for="vanilla"><code>npm i ding</code></pre>
+            <pre data-for="react"><code>npm i @yusufceng1z/ding-react</code></pre>
+            <pre data-for="svelte"><code>npm i @yusufceng1z/ding-svelte</code></pre>
+            <pre data-for="vanilla"><code>npm i @yusufceng1z/ding</code></pre>
           </section>
 
           <section id="setup">
             <h2>Setup</h2>
             <p>Render the toaster once, near the root of your app.</p>
-            <pre data-for="react"><code>import { Toaster } from 'ding-react';
+            <pre data-for="react"><code>import { Toaster } from '@yusufceng1z/ding-react';
 
 export default function App() {
   return (
@@ -63,11 +63,11 @@ export default function App() {
   );
 }</code></pre>
             <pre data-for="svelte"><code>&lt;script&gt;
-  import { Toaster } from 'ding-svelte';
+  import { Toaster } from '@yusufceng1z/ding-svelte';
 &lt;/script&gt;
 
 &lt;Toaster position="top-center" theme="system" /&gt;</code></pre>
-            <pre data-for="vanilla"><code>import { mountToaster } from 'ding';
+            <pre data-for="vanilla"><code>import { mountToaster } from '@yusufceng1z/ding';
 
 const unmount = mountToaster({ position: 'top-center' });</code></pre>
           </section>
@@ -75,7 +75,7 @@ const unmount = mountToaster({ position: 'top-center' });</code></pre>
           <section id="show">
             <h2>Show a toast</h2>
             <p>Import <code>toast</code> from the same package and call it from anywhere. Every call returns the toast id. <code>toast.loading(title)</code> works the same and stays until you update or dismiss it.</p>
-            <pre data-run="show"><code>import { toast } from '<span data-for="react">ding-react</span><span data-for="svelte">ding-svelte</span><span data-for="vanilla">ding</span>';
+            <pre data-run="show"><code>import { toast } from '<span data-for="react">@yusufceng1z/ding-react</span><span data-for="svelte">@yusufceng1z/ding-svelte</span><span data-for="vanilla">@yusufceng1z/ding</span>';
 
 toast.success('Saved');
 toast.error('Payment failed', { description: 'Card declined' });

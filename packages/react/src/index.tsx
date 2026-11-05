@@ -1,5 +1,5 @@
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties } from 'react';
-import { toast, injectStyles, bindToast, onToastKey, ICONS, type Position, type Theme, type ToastItem } from 'ding';
+import { toast, injectStyles, bindToast, onToastKey, ICONS, type Position, type Theme, type ToastItem } from '@yusufceng1z/ding';
 
 export { toast };
 export type { Position, Theme };

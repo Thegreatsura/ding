@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { toast, injectStyles, bindToast, onToastKey, ICONS, type Position, type Theme } from 'ding';
+  import { toast, injectStyles, bindToast, onToastKey, ICONS, type Position, type Theme } from '@yusufceng1z/ding';
 
   let { position, theme }: { position?: Position; theme?: Theme } = $props();
 

@@ -36,12 +36,12 @@
 ## Install
 
 ```bash
-npm i ding-react    # React 18+
-npm i ding-svelte   # Svelte 5
-npm i ding          # plain DOM
+npm i @yusufceng1z/ding-react    # React 18+
+npm i @yusufceng1z/ding-svelte   # Svelte 5
+npm i @yusufceng1z/ding          # plain DOM
 ```
 
-Each framework package depends on the small `ding` core, so you install only one.
+Each framework package depends on the small `@yusufceng1z/ding` core, so you install only one.
 
 ## Quick start
 
@@ -50,7 +50,7 @@ Render the toaster once, then call `toast` from anywhere.
 **React**
 
 ```tsx
-import { Toaster, toast } from 'ding-react';
+import { Toaster, toast } from '@yusufceng1z/ding-react';
 
 export default function App() {
   return (
@@ -66,7 +66,7 @@ export default function App() {
 
 ```svelte
 <script>
-  import { Toaster, toast } from 'ding-svelte';
+  import { Toaster, toast } from '@yusufceng1z/ding-svelte';
 </script>
 
 <Toaster position="top-center" theme="system" />
@@ -76,7 +76,7 @@ export default function App() {
 **Plain DOM**
 
 ```ts
-import { mountToaster, toast } from 'ding';
+import { mountToaster, toast } from '@yusufceng1z/ding';
 
 mountToaster({ position: 'top-center' });
 toast.success('Saved');
@@ -176,9 +176,9 @@ toast.configure({ sound: (type) => mySounds.play(type) });
 
 | Package | Description |
 | --- | --- |
-| [`ding`](packages/core) | Springs, timers, store, sound and the plain DOM renderer |
-| [`ding-react`](packages/react) | React renderer |
-| [`ding-svelte`](packages/svelte) | Svelte 5 renderer |
+| [`@yusufceng1z/ding`](packages/core) | Springs, timers, store, sound and the plain DOM renderer |
+| [`@yusufceng1z/ding-react`](packages/react) | React renderer |
+| [`@yusufceng1z/ding-svelte`](packages/svelte) | Svelte 5 renderer |
 
 The core owns all behavior. The framework packages only render.
 

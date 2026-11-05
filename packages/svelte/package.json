@@ -1,5 +1,5 @@
 {
-  "name": "ding-svelte",
+  "name": "@yusufceng1z/ding-svelte",
   "version": "0.0.1",
   "type": "module",
   "sideEffects": false,
@@ -20,7 +20,7 @@
     "typecheck": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "ding": "workspace:*"
+    "@yusufceng1z/ding": "workspace:*"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"

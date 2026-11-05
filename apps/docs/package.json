@@ -8,9 +8,9 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "ding": "workspace:*",
-    "ding-react": "workspace:*",
-    "ding-svelte": "workspace:*"
+    "@yusufceng1z/ding": "workspace:*",
+    "@yusufceng1z/ding-react": "workspace:*",
+    "@yusufceng1z/ding-svelte": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

@@ -1,4 +1,4 @@
-import { mountToaster, toast } from 'ding';
+import { mountToaster, toast } from '@yusufceng1z/ding';
 import { makeSeg } from './site';
 import './site.css';
 import './docs.css';

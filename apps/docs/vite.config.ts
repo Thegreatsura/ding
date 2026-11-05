@@ -11,9 +11,9 @@ export default defineConfig({
   build: { rollupOptions: { input: { main: src('index.html'), docs: src('docs.html') } } },
   resolve: {
     alias: {
-      'ding': src('../../packages/core/src/index.ts'),
-      'ding-react': src('../../packages/react/src/index.tsx'),
-      'ding-svelte': src('../../packages/svelte/src/lib/index.ts'),
+      '@yusufceng1z/ding': src('../../packages/core/src/index.ts'),
+      '@yusufceng1z/ding-react': src('../../packages/react/src/index.tsx'),
+      '@yusufceng1z/ding-svelte': src('../../packages/svelte/src/lib/index.ts'),
     },
     dedupe: ['react', 'react-dom', 'svelte'],
   },

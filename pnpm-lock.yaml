@@ -23,13 +23,13 @@ importers:
 
   apps/docs:
     dependencies:
-      ding:
+      '@yusufceng1z/ding':
         specifier: workspace:*
         version: link:../../packages/core
-      ding-react:
+      '@yusufceng1z/ding-react':
         specifier: workspace:*
         version: link:../../packages/react
-      ding-svelte:
+      '@yusufceng1z/ding-svelte':
         specifier: workspace:*
         version: link:../../packages/svelte
     devDependencies:
@@ -65,7 +65,7 @@ importers:
 
   packages/react:
     dependencies:
-      ding:
+      '@yusufceng1z/ding':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -78,7 +78,7 @@ importers:
 
   packages/svelte:
     dependencies:
-      ding:
+      '@yusufceng1z/ding':
         specifier: workspace:*
         version: link:../core
     devDependencies:
