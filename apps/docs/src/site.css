@@ -15,7 +15,7 @@ main{display:grid;gap:40px;padding-top:56px;flex:1}
 .nav{display:flex;align-items:center;gap:8px}
 .navlink{padding:8px 12px;border-radius:var(--r);color:var(--mute);font-size:13px;text-decoration:none;transition:color .15s ease-out,background-color .15s ease-out}
 .navlink[aria-current]{color:var(--ink)}
-.gh{display:inline-grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid var(--line);border-radius:var(--r);color:var(--ink);font-size:13px;text-decoration:none;transition:background-color .15s ease-out,scale .15s ease-out}
+.gh{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line);border-radius:var(--r);color:var(--ink);font-size:13px;text-decoration:none;transition:background-color .15s ease-out,scale .15s ease-out}
 .gh:active{scale:.96}
 .hero{position:relative;display:grid;gap:16px;justify-items:start}
 .mascot{width:132px;height:114px;padding:0;border:0;background:transparent;border-radius:24px}
