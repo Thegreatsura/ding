@@ -33,6 +33,7 @@ const svg = (cls: string, paths: readonly string[]) => {
 
 /** Framework-free renderer. Returns an unmount function. */
 export function mountToaster(opts: { position?: Position; theme?: Theme } = {}): () => void {
+  if (typeof document === 'undefined') return () => {}; // server render: nothing to mount
   injectStyles();
   toast.configure(opts);
   const vp = el('div', 'tst-viewport', document.body);
