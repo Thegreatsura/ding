@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Undo toast: let users reverse an action instead of confirming</title>
+    <meta name="description" content="Replace Are you sure? dialogs with an undo toast. Code for React, Svelte and plain JavaScript, plus how to make the undo trustworthy." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/undo-toast/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="Undo toast: let users reverse an action instead of confirming" />
+    <meta property="og:description" content="Replace Are you sure? dialogs with an undo toast. Code for React, Svelte and plain JavaScript, plus how to make the undo trustworthy." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/undo-toast/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "How to build an undo toast",
+        "description": "Replace Are you sure? dialogs with an undo toast. Code for React, Svelte and plain JavaScript, plus how to make the undo trustworthy.",
+        "url": "https://ding.yusufcengiz.dev/undo-toast/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>How to build an undo toast</h1>
+      <p class="lead">A confirm dialog before every delete slows people down and they click through it anyway. Doing the action and offering Undo in a toast is faster, and safer if the undo actually works.</p>
+      <div class="try" role="group" aria-label="Try the toast">
+        <span>Try it:</span>
+        <button type="button" data-demo="undo">Undo</button>
+      </div>
+      <h2>The code</h2>
+      <pre><code>import { toast } from '@yusufceng1z/ding-react';
+
+      toast.success('Message deleted', {
+        action: {
+          label: 'Undo',
+          onClick: () =&gt; {
+            restore();
+            return { type: 'info', title: 'Restored' };
+          },
+        },
+      });</code></pre>
+      <p>The click handler may return a patch. When it does, the toast changes in place to Restored instead of closing, so the person gets confirmation that the undo worked. The same code works with <code>@yusufceng1z/ding-svelte</code> and <code>@yusufceng1z/ding</code>, only the import differs.</p>
+      <h2>Making the undo real</h2>
+      <p>Do not delete for good when the button is shown. Mark the item as deleted first, and remove it only after the undo window has passed, or never, if you keep a trash. Otherwise Undo is a promise you cannot keep when the request has already finished.</p>
+      <p>A toast with a button stays until dismissed in Ding, so nobody is racing a timer. Still, keep a second way back, such as a trash view. A toast is easy to miss, and for some people it is hard to reach, see <a href="/toast-accessibility/">toast accessibility</a>.</p>
+      <p>More on when toasts are the right tool: <a href="/toast-notification-ux/">toast notification UX</a>.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+    <script type="module" src="/src/page-demo.ts"></script>
+  </body>
+</html>

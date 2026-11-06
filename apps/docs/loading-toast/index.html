@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loading toast: show progress, then success or error</title>
+    <meta name="description" content="Show a loading toast that turns into a success or error toast when the work finishes. Promise and manual progress examples with Ding." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/loading-toast/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="Loading toast: show progress, then success or error" />
+    <meta property="og:description" content="Show a loading toast that turns into a success or error toast when the work finishes. Promise and manual progress examples with Ding." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/loading-toast/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Loading toasts: from Saving… to Saved",
+        "description": "Show a loading toast that turns into a success or error toast when the work finishes. Promise and manual progress examples with Ding.",
+        "url": "https://ding.yusufcengiz.dev/loading-toast/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>Loading toasts: from Saving… to Saved</h1>
+      <p class="lead">A loading toast says that work started, then becomes the result. With one toast on screen, the message goes from Saving… to Saved in the same place, rather than a second toast appearing next to it.</p>
+      <div class="try" role="group" aria-label="Try the toast">
+        <span>Try it:</span>
+        <button type="button" data-demo="promise">Promise</button>
+        <button type="button" data-demo="progress">Progress</button>
+      </div>
+      <h2>Wrap a promise</h2>
+      <p>This is the shortest version. Pass the promise and the three messages.</p>
+      <pre><code>import { toast } from '@yusufceng1z/ding-react';
+
+      toast.promise(save(), {
+        loading: 'Saving…',
+        success: 'Saved',
+        error: (err) =&gt; `Could not save: ${err.message}`,
+      });</code></pre>
+      <h2>Update it by hand</h2>
+      <p>For uploads and other jobs with steps, keep the id and update the toast as you go. <code>progress</code> runs from 0 to 1 and draws a thin bar at the bottom of the toast.</p>
+      <pre><code>const id = toast.loading('Uploading photo…', { progress: 0 });
+      toast.update(id, { progress: 0.6 });
+      toast.update(id, { type: 'success', title: 'Photo uploaded', progress: null });</code></pre>
+      <h2>Good to know</h2>
+      <p>A loading toast stays until you update or dismiss it, so make sure every code path ends in one of those. Only the newest caller can update the shared toast. If a slow request finishes after you have shown something newer, its update is ignored instead of overwriting the newer message.</p>
+      <p>For work that takes minutes, also show progress on the page itself. A toast is a poor place for long-running status. See <a href="/toast-notification-ux/">toast notification UX</a> for when to use which.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+    <script type="module" src="/src/page-demo.ts"></script>
+  </body>
+</html>

@@ -152,7 +152,6 @@ const link = (href: string, text: string, cls = '') => h('a', { href, className:
 export function mountSite(root: HTMLElement, _adapter?: string) {
   (window as unknown as { toast: typeof toast }).toast = toast; // for console experiments
   toast.configure({ theme: 'dark', sound: true });
-  document.title = 'Ding';
 
   // top bar
   const gh = link(GITHUB, '', 'gh');
@@ -279,5 +278,5 @@ export function mountSite(root: HTMLElement, _adapter?: string) {
     }))),
   );
   const foot = h('footer', {}, 'Made by ', link('https://yusufcengiz.dev', 'yusufcengiz.dev'));
-  root.append(h('div', { className: 'page' }, h('a', { className: 'skip', href: '#main', textContent: 'Skip to demos' }), bar, h('main', { id: 'main' }, hero, settings, ...groups), foot));
+  root.replaceChildren(h('div', { className: 'page' }, h('a', { className: 'skip', href: '#main', textContent: 'Skip to demos' }), bar, h('main', { id: 'main' }, hero, settings, ...groups), foot));
 }

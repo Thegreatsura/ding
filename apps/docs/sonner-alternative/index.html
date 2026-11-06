@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sonner alternative: a toast library that shows one toast at a time</title>
+    <meta name="description" content="Ding is a React and Svelte toast library for people who want one toast on screen that morphs in place, not a stack. When it fits, and when Sonner is the better pick." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/sonner-alternative/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="Sonner alternative: a toast library that shows one toast at a time" />
+    <meta property="og:description" content="Ding is a React and Svelte toast library for people who want one toast on screen that morphs in place, not a stack. When it fits, and when Sonner is the better pick." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/sonner-alternative/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "A Sonner alternative that shows one toast at a time",
+        "description": "Ding is a React and Svelte toast library for people who want one toast on screen that morphs in place, not a stack. When it fits, and when Sonner is the better pick.",
+        "url": "https://ding.yusufcengiz.dev/sonner-alternative/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>A Sonner alternative that shows one toast at a time</h1>
+      <p class="lead">Sonner is a good library and it stacks toasts. Ding makes a different choice: one toast on screen, and a new message turns the current toast into the new one. Which you want depends on your app.</p>
+      <div class="try" role="group" aria-label="Try the toast">
+        <span>Try it:</span>
+        <button type="button" data-demo="success">Success</button>
+        <button type="button" data-demo="error">Error</button>
+        <button type="button" data-demo="promise">Promise</button>
+      </div>
+      <h2>Why I made one toast at a time</h2>
+      <p>In the apps I work on, a burst of events (save, then sync, then a failed request) produced a stack that covered the page and was harder to read than a single message. I wanted the latest message to win, with a visible transition so the user sees that it changed.</p>
+      <h2>Pick Ding if</h2>
+      <p>You want one message at a time. You update the same toast through loading, success and undo. You want zero dependencies and no CSS import. Or you use Svelte 5 or plain JavaScript as well as React.</p>
+      <h2>Pick Sonner if</h2>
+      <p>You need several toasts visible together, or you want a larger ecosystem and track record. Ding does not stack, and that is not going to change.</p>
+      <h2>Switching</h2>
+      <p>The calls look familiar. Render one <code>Toaster</code>, then:</p>
+      <pre><code>import { toast } from '@yusufceng1z/ding-react';
+
+      toast.success('Saved');
+      toast.promise(save(), { loading: 'Saving…', success: 'Saved', error: 'Failed' });</code></pre>
+      <p>Check the options you use against the <a href="/docs.html">docs</a> before swapping, since not every option exists. Setup details are in <a href="/react-toast/">React toast notifications</a>. If you use Svelte, see the <a href="/svelte-sonner-alternative/">svelte-sonner alternative</a>.</p>
+      <p>Ding is open source on <a href="https://github.com/YusufCeng1z/ding">GitHub</a>. A star is the easiest way to say it was useful.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+    <script type="module" src="/src/page-demo.ts"></script>
+  </body>
+</html>

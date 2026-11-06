@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Next.js toast notifications in the App Router (Ding)</title>
+    <meta name="description" content="Set up toast notifications in a Next.js App Router project with Ding: a client Toaster in the root layout and toast() calls from client components." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/nextjs-toast/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="Next.js toast notifications in the App Router (Ding)" />
+    <meta property="og:description" content="Set up toast notifications in a Next.js App Router project with Ding: a client Toaster in the root layout and toast() calls from client components." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/nextjs-toast/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Next.js toast notifications",
+        "description": "Set up toast notifications in a Next.js App Router project with Ding: a client Toaster in the root layout and toast() calls from client components.",
+        "url": "https://ding.yusufcengiz.dev/nextjs-toast/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>Next.js toast notifications</h1>
+      <p class="lead">The one thing to get right in Next.js is where the Toaster lives. It uses React hooks, so it has to be in a client component. Everything else is the same as plain React.</p>
+      <div class="try" role="group" aria-label="Try the toast">
+        <span>Try it:</span>
+        <button type="button" data-demo="success">Success</button>
+        <button type="button" data-demo="error">Error</button>
+        <button type="button" data-demo="promise">Promise</button>
+      </div>
+      <h2>Install</h2>
+      <pre><code>npm i @yusufceng1z/ding-react</code></pre>
+      <h2>A client component for the Toaster</h2>
+      <p>Create <code>components/toaster.tsx</code>:</p>
+      <pre><code>"use client";
+
+      import { Toaster } from '@yusufceng1z/ding-react';
+
+      export function AppToaster() {
+        return &lt;Toaster position="top-center" theme="system" /&gt;;
+      }</code></pre>
+      <p>Then render it once in <code>app/layout.tsx</code>. The layout itself can stay a server component.</p>
+      <pre><code>import { AppToaster } from '@/components/toaster';
+
+      export default function RootLayout({ children }: { children: React.ReactNode }) {
+        return (
+          &lt;html lang="en"&gt;
+            &lt;body&gt;
+              {children}
+              &lt;AppToaster /&gt;
+            &lt;/body&gt;
+          &lt;/html&gt;
+        );
+      }</code></pre>
+      <h2>Call toast from client code</h2>
+      <pre><code>"use client";
+
+      import { toast } from '@yusufceng1z/ding-react';
+
+      export function SaveButton() {
+        return &lt;button onClick={() =&gt; toast.success('Saved')}&gt;Save&lt;/button&gt;;
+      }</code></pre>
+      <h2>Server actions</h2>
+      <p><code>toast</code> runs in the browser, so it cannot be called inside a server action. Call it from the client code that triggers the action and pass the action's promise:</p>
+      <pre><code>toast.promise(saveAction(formData), {
+        loading: 'Saving…',
+        success: 'Saved',
+        error: 'Could not save',
+      });</code></pre>
+      <p>If the project already uses shadcn/ui, the <a href="/shadcn-toast/">shadcn install</a> does the wrapper file for you. For the non-Next parts see <a href="/react-toast/">React toast notifications</a>.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+    <script type="module" src="/src/page-demo.ts"></script>
+  </body>
+</html>

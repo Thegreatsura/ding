@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>shadcn/ui toast: add Ding with one CLI command</title>
+    <meta name="description" content="Ding is available as a shadcn registry item. One command installs the package and adds a small wrapper component to your project." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/shadcn-toast/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="shadcn/ui toast: add Ding with one CLI command" />
+    <meta property="og:description" content="Ding is available as a shadcn registry item. One command installs the package and adds a small wrapper component to your project." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/shadcn-toast/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "A shadcn/ui toast you can add with the CLI",
+        "description": "Ding is available as a shadcn registry item. One command installs the package and adds a small wrapper component to your project.",
+        "url": "https://ding.yusufcengiz.dev/shadcn-toast/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>A shadcn/ui toast you can add with the CLI</h1>
+      <p class="lead">Ding publishes a registry item, so the shadcn CLI can install it like any other component.</p>
+      <div class="try" role="group" aria-label="Try the toast">
+        <span>Try it:</span>
+        <button type="button" data-demo="success">Success</button>
+        <button type="button" data-demo="error">Error</button>
+      </div>
+      <h2>Add it</h2>
+      <pre><code>npx shadcn@latest add https://ding.yusufcengiz.dev/r/ding.json</code></pre>
+      <p>This installs <code>@yusufceng1z/ding-react</code> and writes <code>components/ding-toaster.tsx</code>. The file is tiny: it re-exports the Toaster as <code>DingToaster</code>, plus <code>toast</code>, and marks itself <code>"use client"</code> so it works in the Next.js App Router.</p>
+      <h2>Use it</h2>
+      <pre><code>import { DingToaster } from '@/components/ding-toaster';
+
+      // once, in your root layout
+      &lt;DingToaster position="top-center" /&gt;</code></pre>
+      <pre><code>import { toast } from '@/components/ding-toaster';
+
+      toast.success('Saved');
+      toast.error('Payment failed', { description: 'Card declined' });</code></pre>
+      <h2>How it differs from the stock shadcn toast</h2>
+      <p>It shows one toast at a time and morphs it when you call again. The styles come from JavaScript, so it does not depend on Tailwind or add CSS to your project. If you need several toasts visible together, the stacking toast that shadcn ships is the better fit.</p>
+      <p>Not on shadcn? The same package works anywhere, see <a href="/react-toast/">React toast notifications</a>.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+    <script type="module" src="/src/page-demo.ts"></script>
+  </body>
+</html>

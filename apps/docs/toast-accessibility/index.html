@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Accessible toast notifications: live regions, timing, keyboard</title>
+    <meta name="description" content="How to build accessible toasts: announce them with live regions, give people enough time, make buttons reachable by keyboard and respect reduced motion." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/toast-accessibility/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="Accessible toast notifications: live regions, timing, keyboard" />
+    <meta property="og:description" content="How to build accessible toasts: announce them with live regions, give people enough time, make buttons reachable by keyboard and respect reduced motion." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/toast-accessibility/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Making toast notifications accessible",
+        "description": "How to build accessible toasts: announce them with live regions, give people enough time, make buttons reachable by keyboard and respect reduced motion.",
+        "url": "https://ding.yusufcengiz.dev/toast-accessibility/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>Making toast notifications accessible</h1>
+      <p class="lead">A toast that a screen reader never announces, or that disappears before a keyboard user can reach its button, does not work. These are the four things to check.</p>
+      <h2>Announce it</h2>
+      <p>Put the text in a live region so screen readers read it without moving focus. <code>role="status"</code> is polite and fits most messages. <code>role="alert"</code> interrupts, so keep it for urgent errors. Ding announces errors assertively and everything else politely. Live-region support varies between screen readers, so test with the ones your users have.</p>
+      <h2>Give people time</h2>
+      <p>A message on a timer is a problem for anyone who reads slowly or needs longer to react. Pause the timer on hover and on keyboard focus, keep toasts with buttons on screen longer, and do not auto-dismiss errors. In Ding, errors, loading toasts and toasts with a button stay until dismissed.</p>
+      <h2>Keyboard access</h2>
+      <p>If a toast has a button, keyboard users need a way to reach it. In Ding, <kbd>Alt</kbd> + <kbd>T</kbd> moves focus into the toast and <kbd>Esc</kbd> dismisses it.</p>
+      <h2>Reduced motion</h2>
+      <p>Spring animation looks good and some people turn motion off. Ding follows <code>prefers-reduced-motion</code>.</p>
+      <h2>What a library cannot do for you</h2>
+      <p>Do not let a toast be the only place a critical message or an Undo lives. Keep the text short and plain. See <a href="/toast-notification-ux/">toast notification UX</a> for when a toast is the right choice, and <a href="/undo-toast/">undo toast</a> for a pattern that needs a second way back.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+  </body>
+</html>

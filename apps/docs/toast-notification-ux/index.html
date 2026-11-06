@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Toast notification UX: when to use one and how long it should stay</title>
+    <meta name="description" content="When to use a toast notification, when to use something else, how long it should stay, and how to word it. Practical rules from building a toast library." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/toast-notification-ux/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="Toast notification UX: when to use one and how long it should stay" />
+    <meta property="og:description" content="When to use a toast notification, when to use something else, how long it should stay, and how to word it. Practical rules from building a toast library." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/toast-notification-ux/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Toast notification UX: when a toast is the right tool",
+        "description": "When to use a toast notification, when to use something else, how long it should stay, and how to word it. Practical rules from building a toast library.",
+        "url": "https://ding.yusufcengiz.dev/toast-notification-ux/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>Toast notification UX: when a toast is the right tool</h1>
+      <p class="lead">A toast is a short message that shows up after something happened and leaves by itself. That makes it good for small confirmations and bad for anything a person has to see.</p>
+      <h2>Good uses</h2>
+      <p>Confirm something the user just did: saved, copied, sent. Offer a quick way back, like Undo after a delete. Report that background work finished, for example an export that was running while the user did something else.</p>
+      <h2>Bad uses</h2>
+      <p>Errors the user has to fix belong next to the field that failed, where they stay visible. Anything critical, legal or about money should not disappear after a few seconds. And a toast is one sentence with at most one button. If you need a paragraph or two choices, use a dialog or an inline message.</p>
+      <h2>How long it should stay</h2>
+      <p>Five seconds is a reasonable default for a short sentence. A toast with a button needs longer, because the person has to notice it and then move to it. Hover and keyboard focus should pause the timer so reading is never a race. In Ding, errors, loading toasts and toasts with a button do not time out at all.</p>
+      <h2>One toast or a stack</h2>
+      <p>A stack keeps history but covers the page when many things happen quickly. A single toast that changes in place keeps attention on the latest message and loses the older ones. I think that trade is right for most apps, which is why Ding works that way, but if your users need to see several messages together, stack.</p>
+      <h2>Wording</h2>
+      <p>Say what happened in a few words: Saved, Link copied. For an error say what failed and what to try: Could not save. Check your connection and try again. Leave out exclamation marks and the word successfully, they add length and no information.</p>
+      <p>Two related pages: <a href="/undo-toast/">the undo pattern</a> and <a href="/toast-accessibility/">making toasts accessible</a>. If you are choosing a name or a library, see <a href="/toast-vs-snackbar/">toast vs snackbar</a>.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+  </body>
+</html>

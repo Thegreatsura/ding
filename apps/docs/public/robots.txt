@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ding.yusufcengiz.dev/sitemap.xml

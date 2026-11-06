@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>svelte-sonner alternative for Svelte 5: one toast at a time</title>
+    <meta name="description" content="Ding is a Svelte 5 toast library with no dependencies that shows one toast at a time. How it differs from svelte-sonner, and how to switch." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/svelte-sonner-alternative/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="svelte-sonner alternative for Svelte 5: one toast at a time" />
+    <meta property="og:description" content="Ding is a Svelte 5 toast library with no dependencies that shows one toast at a time. How it differs from svelte-sonner, and how to switch." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/svelte-sonner-alternative/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "A svelte-sonner alternative for Svelte 5",
+        "description": "Ding is a Svelte 5 toast library with no dependencies that shows one toast at a time. How it differs from svelte-sonner, and how to switch.",
+        "url": "https://ding.yusufcengiz.dev/svelte-sonner-alternative/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>A svelte-sonner alternative for Svelte 5</h1>
+      <p class="lead">svelte-sonner is a Svelte port of Sonner and it stacks toasts. Ding is a separate library built around one toast on screen that changes in place when a new message arrives.</p>
+      <div class="try" role="group" aria-label="Try the toast">
+        <span>Try it:</span>
+        <button type="button" data-demo="success">Success</button>
+        <button type="button" data-demo="promise">Promise</button>
+      </div>
+      <h2>Install and mount</h2>
+      <pre><code>npm i @yusufceng1z/ding-svelte</code></pre>
+      <pre><code>&lt;script&gt;
+        import { Toaster } from '@yusufceng1z/ding-svelte';
+        let { children } = $props();
+      &lt;/script&gt;
+
+      {@render children()}
+      &lt;Toaster position="top-center" theme="system" /&gt;</code></pre>
+      <h2>Use it</h2>
+      <pre><code>import { toast } from '@yusufceng1z/ding-svelte';
+
+      toast.success('Saved');
+      toast.promise(save(), { loading: 'Saving…', success: 'Saved', error: 'Failed' });</code></pre>
+      <h2>Should you switch</h2>
+      <p>If you want one message at a time and no dependencies, yes, it is worth trying. If you need several toasts on screen at once, stay with a stacking library. Ding only supports Svelte 5.</p>
+      <p>The full Svelte setup is on the <a href="/svelte-toast/">Svelte toast page</a>, and the reasoning behind one toast at a time is on the <a href="/sonner-alternative/">Sonner alternative page</a>.</p>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+    <script type="module" src="/src/page-demo.ts"></script>
+  </body>
+</html>

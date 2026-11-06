@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Toast vs snackbar: is there a difference?</title>
+    <meta name="description" content="Toast and snackbar usually mean the same UI element: a short, temporary message. Where each name comes from and which one to use in your code." />
+    <link rel="canonical" href="https://ding.yusufcengiz.dev/toast-vs-snackbar/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/page.css" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content="Toast vs snackbar: is there a difference?" />
+    <meta property="og:description" content="Toast and snackbar usually mean the same UI element: a short, temporary message. Where each name comes from and which one to use in your code." />
+    <meta property="og:url" content="https://ding.yusufcengiz.dev/toast-vs-snackbar/" />
+    <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Toast vs snackbar",
+        "description": "Toast and snackbar usually mean the same UI element: a short, temporary message. Where each name comes from and which one to use in your code.",
+        "url": "https://ding.yusufcengiz.dev/toast-vs-snackbar/",
+        "datePublished": "2026-11-06",
+        "dateModified": "2026-11-06",
+        "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
+        "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
+      }
+    </script>
+  </head>
+  <body>
+    <nav aria-label="Site">
+      <a href="/">Ding</a>
+      <a href="/docs.html">Docs</a>
+      <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
+    </nav>
+    <main>
+      <h1>Toast vs snackbar</h1>
+      <p class="lead">Mostly no. Both words describe a short message that appears over the page, then goes away on its own. The difference is mainly which design tradition you learned the word from.</p>
+      <h2>Where the names come from</h2>
+      <p>Toast is the common word on the web and in a lot of component libraries, named after bread popping out of a toaster. Snackbar is the term Material Design uses, and libraries built on Material follow it.</p>
+      <h2>Where people draw a line</h2>
+      <p>Some teams use snackbar for a single message fixed to a screen edge, usually with one action, and toast for any floating message including ones that stack. That is a team convention, not a standard. If your design system already picked a word, use it everywhere, in code, docs and conversation.</p>
+      <h2>What to actually decide</h2>
+      <p>The name matters less than the behavior. Decide whether messages stack or replace each other, where they appear, how long they stay, and whether they can carry an action. Ding is a toast library that shows one message at a time and replaces it on the next call. The <a href="/toast-notification-ux/">UX guide</a> goes through those choices.</p>
+      <pre><code>import { toast } from '@yusufceng1z/ding-react';
+
+      toast.success('Saved');</code></pre>
+      <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
+    </main>
+  </body>
+</html>
