@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ding",
+  "type": "registry:component",
+  "title": "Ding",
+  "description": "Spring-physics toast. One toast stays on screen and a new call morphs it in place instead of stacking.",
+  "dependencies": [
+    "@yusufceng1z/ding-react"
+  ],
+  "files": [
+    {
+      "path": "components/ding-toaster.tsx",
+      "type": "registry:component",
+      "content": "\"use client\";\n\nexport { Toaster as DingToaster, toast } from \"@yusufceng1z/ding-react\";\n"
+    }
+  ]
+}
