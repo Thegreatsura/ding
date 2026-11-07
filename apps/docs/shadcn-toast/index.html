@@ -46,7 +46,8 @@
         <button type="button" data-demo="error">Error</button>
       </div>
       <h2>Add it</h2>
-      <pre><code>npx shadcn@latest add https://ding.yusufcengiz.dev/r/ding.json</code></pre>
+      <pre><code>npx shadcn@latest add @ding/ding</code></pre>
+      <p>Ding is listed in the shadcn registry directory, so the <code>@ding</code> namespace works without any setup. The full URL works too: <code>npx shadcn@latest add https://ding.yusufcengiz.dev/r/ding.json</code>.</p>
       <p>This installs <code>@yusufceng1z/ding-react</code> and writes <code>components/ding-toaster.tsx</code>. The file is tiny: it re-exports the Toaster as <code>DingToaster</code>, plus <code>toast</code>, and marks itself <code>"use client"</code> so it works in the Next.js App Router.</p>
       <h2>Use it</h2>
       <pre><code>import { DingToaster } from '@/components/ding-toaster';

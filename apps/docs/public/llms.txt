@@ -7,6 +7,7 @@
 - React: `npm i @yusufceng1z/ding-react`
 - Svelte 5: `npm i @yusufceng1z/ding-svelte`
 - Vanilla: `npm i @yusufceng1z/ding`
+- shadcn/ui (React): `npx shadcn@latest add @ding/ding`
 
 ## Setup
 

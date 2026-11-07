@@ -43,6 +43,12 @@ npm i @yusufceng1z/ding          # plain DOM
 
 Each framework package depends on the small `@yusufceng1z/ding` core, so you install only one.
 
+Using shadcn/ui? Ding is in the shadcn registry directory, so one command installs the React package and adds a `ding-toaster.tsx` wrapper:
+
+```bash
+npx shadcn@latest add @ding/ding
+```
+
 ## Quick start
 
 Render the toaster once, then call `toast` from anywhere.
