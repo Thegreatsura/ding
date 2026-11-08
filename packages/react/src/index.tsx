@@ -12,7 +12,7 @@ function Item({ t, i, labels }: { t: ToastItem; i: number; labels: ToastLabels }
   useEffect(() => (slot.current ? bindToast(slot.current, t.id) : undefined), [t.id]);
   const sticky = t.duration === 0 && t.type !== 'loading' && !t.secondary;
   return (
-    <div ref={slot} className="tst-slot" style={{ '--tst-i': i } as CSSProperties}>
+    <div ref={slot} className="tst-slot" tabIndex={-1} style={{ '--tst-i': i } as CSSProperties}>
       <div
         className="tst"
         data-phase={t.phase}

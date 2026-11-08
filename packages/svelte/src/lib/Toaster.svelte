@@ -36,7 +36,7 @@
   <div class="tst-sr" role="alert">{state.alert}</div>
   {#each state.toasts as t, idx (t.id)}
     {@const i = state.toasts.length - 1 - idx}
-    <div class="tst-slot" style:--tst-i={i} use:bind={t.id}>
+    <div class="tst-slot" tabindex="-1" style:--tst-i={i} use:bind={t.id}>
       <!-- Announced through the viewport's persistent live regions, not here. -->
       <div
         class="tst"
