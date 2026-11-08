@@ -4,11 +4,15 @@ import { bindToast } from './bind';
 import { ICONS } from './icons';
 import type { Position, Theme, ToastItem, ToastLabels } from './types';
 
+// Escape belongs to what the user is working in: a dialog, menu or text field closes or clears itself first.
+const BUSY = 'dialog,[role=dialog],[aria-modal=true],[role=menu],[role=listbox],input,textarea,select,[contenteditable]';
+
 /** Shared keyboard handling for every adapter: Escape dismisses, Alt+T moves focus into the toast (which also pauses its timer). */
 export function onToastKey(e: KeyboardEvent): void {
   if (e.defaultPrevented || !toast.getState().toasts.length) return;
-  if (e.key === 'Escape') toast.dismiss();
-  else if (e.altKey && e.code === 'KeyT') {
+  if (e.key === 'Escape') {
+    if (!document.activeElement?.closest(BUSY)) toast.dismiss();
+  } else if (e.altKey && e.code === 'KeyT') {
     // a button if the toast has one, otherwise the newest toast itself
     const slots = document.querySelectorAll<HTMLElement>('.tst-viewport .tst-slot');
     (document.querySelector<HTMLElement>('.tst-viewport button:not([tabindex="-1"])') ?? slots[slots.length - 1])?.focus();
