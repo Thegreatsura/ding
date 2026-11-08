@@ -146,13 +146,15 @@ toast.update(id, { type: 'success', title: 'Photo uploaded', progress: null });<
             <pre><code>toast.configure({
   position: 'bottom-right', // top-left, top-center, top-right, bottom-left, bottom-center, bottom-right
   theme: 'dark',            // system, light, dark
+  labels: { dismiss: 'Fermer la notification' }, // screen reader names, English by default
   sound: true,
   volume: 0.5,
 });
 
 toast.dismiss(id);  // one toast
 toast.dismiss();    // all</code></pre>
-            <p>Position and theme can also be set as props on the toaster. The toast follows reading direction, so right-to-left pages mirror automatically.</p>
+            <p>Position, theme and labels can also be set as props on the toaster. The toast follows reading direction, so right-to-left pages mirror automatically.</p>
+            <p><code>labels</code> sets the names screen readers announce for the notifications region (<code>region</code>) and the close button (<code>dismiss</code>). Keys you leave out keep their English default, so a non-English page only needs to translate what it uses.</p>
           </section>
 
           <section id="sound">
