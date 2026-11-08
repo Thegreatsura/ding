@@ -112,12 +112,14 @@ opacity:calc(var(--tp)*1.5 - .25);filter:blur(calc((1 - var(--tp))*10px));transf
 .tst[data-phase=open] .tst-desc{animation:tst-in-up var(--tst-pop-dur) var(--tst-pop) .1s both}
 .tst[data-phase=open] .tst-action,.tst[data-phase=open] .tst-close{animation:tst-in-btn var(--tst-pop-dur) var(--tst-pop) .16s backwards}
 .tst[data-phase=open] .tst-secondary{animation-delay:.1s}
-.tst-action,.tst-close{flex:none;margin:0;border:0;color:inherit;font:inherit;cursor:pointer;background:transparent;
+.tst-action,.tst-close{position:relative;flex:none;margin:0;border:0;color:inherit;font:inherit;cursor:pointer;background:transparent;
 opacity:calc(var(--ap)*1.3 - .15);transform:scale(calc(.85 + var(--ap)*.15));
 transition-property:background-color,scale;transition-duration:.15s;transition-timing-function:ease-out}
 .tst-action{height:30px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:600;background:var(--tst-fg);color:var(--tst-bg)}
 .tst-secondary{background:transparent;color:color-mix(in srgb,var(--tst-fg) 65%,transparent);padding:0 10px}
 .tst-close{width:30px;height:30px;padding:0;border-radius:50%;display:grid;place-items:center}
+/* 30px look, 44px target: taller hit area, narrow enough sideways that neighbours (8px apart) never overlap */
+.tst-action::before,.tst-close::before{content:'';position:absolute;inset:-7px -3px}
 .tst-close svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
 @media (hover:hover){.tst-action:hover{background:color-mix(in srgb,var(--tst-fg) 82%,var(--tst-bg))}.tst-secondary:hover,.tst-close:hover{background:color-mix(in srgb,var(--tst-fg) 10%,transparent);color:var(--tst-fg)}}
 .tst-action:not(:disabled):active,.tst-close:not(:disabled):active{scale:.96}
