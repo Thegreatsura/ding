@@ -71,7 +71,7 @@ translate:0 var(--tst-y0);scale:var(--tst-enter-scale,.5);opacity:0;will-change:
 .tst[data-type=warning]{--c:var(--tst-warning)}
 .tst[data-type=info]{--c:var(--tst-info)}
 
-.tst-icon{position:absolute;inset-inline-start:0;top:0;width:var(--tst-size);height:var(--tst-size);display:grid;place-items:center}
+.tst-icon{position:absolute;inset-inline-start:-1px;top:-1px;width:var(--tst-size);height:var(--tst-size);display:grid;place-items:center}
 .tst-media{width:28px;height:28px;border-radius:50%;object-fit:cover;outline:1px solid light-dark(oklch(0 0 0/.1),oklch(1 0 0/.1));outline-offset:-1px;animation:tst-swap var(--tst-stack-dur) var(--tst-stack) .1s both}
 .tst-badge{position:relative;width:24px;height:24px;display:grid;place-items:center}
 .tst-svg{width:22px;height:22px;fill:none;stroke:var(--c);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s cubic-bezier(.2,0,0,1);animation:tst-swap var(--tst-stack-dur) var(--tst-stack) .1s both}
@@ -92,7 +92,7 @@ translate:0 var(--tst-y0);scale:var(--tst-enter-scale,.5);opacity:0;will-change:
 .tst[data-type=info] .tst-svg path:nth-child(3){stroke-dasharray:none;stroke-dashoffset:0;animation:tst-dot .4s var(--tst-pop) var(--md) both}
 .tst[data-type=info] .tst-svg path:nth-child(2){animation-delay:calc(var(--md) + .16s)}
 
-.tst-body{position:absolute;inset-inline-start:calc(var(--tst-size) - 1px);top:-1px;display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;width:max-content;max-width:calc(100vw - 2*var(--tst-pad) - var(--tst-size) + 1px);min-height:var(--tst-size);padding-inline-end:18px;
+.tst-body{position:absolute;inset-inline-start:calc(var(--tst-size) - 1px);top:-1px;display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;width:max-content;max-width:calc(100vw - 2*var(--tst-pad) - var(--tst-size) + 1px);min-height:var(--tst-size);padding-inline-end:8px;
 opacity:calc(var(--tp)*1.5 - .25);filter:blur(calc((1 - var(--tp))*10px));transform:translateX(calc((1 - var(--tp))*-12px*var(--tst-flip,1)))}
 .tst-body:has(.tst-action,.tst-close){padding-inline-end:8px;padding-bottom:0}
 .tst-body[data-wrapped]{padding-bottom:10px}
