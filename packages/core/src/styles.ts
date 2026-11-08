@@ -46,7 +46,7 @@ position:fixed;inset:0;z-index:2147483647;pointer-events:none;font:500 14px/1.3 
 .tst-viewport[data-position$=left]{--tst-ox:0%;--tx:0px}
 .tst-viewport[data-position$=right]{--tst-ox:100%;--tx:0px}
 .tst-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
-.tst-slot{position:absolute;pointer-events:auto;touch-action:none;user-select:none;cursor:grab;--tst-i:0;
+.tst-slot{position:absolute;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab;--tst-i:0;
 --y:calc(var(--tst-dir)*-1*var(--tst-i)*var(--tst-stack-offset));--s:calc(1 - var(--tst-i)*var(--tst-stack-scale));
 transform:translate(calc(var(--tx) + var(--dx,0px)),calc(var(--y) + var(--dy,0px))) scale(var(--s));
 transform-origin:var(--tst-ox) var(--tst-oy);z-index:calc(100 - var(--tst-i));
