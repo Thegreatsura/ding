@@ -1,6 +1,6 @@
 # Ding
 
-> Spring-physics toast notifications for React, Svelte 5 and plain DOM. Zero dependencies. Styles are injected from JS, so there is no stylesheet to import. Human docs: /docs.html
+> Spring-physics toast notifications for React, Svelte 5 and plain DOM. Zero dependencies. Styles are injected from JS, so there is no stylesheet to import. Human docs: /docs.html. Release notes with live demos: /changelog/
 
 ## Install
 

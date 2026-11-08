@@ -156,7 +156,7 @@ export function mountSite(root: HTMLElement, _adapter?: string) {
   // top bar
   const gh = link(GITHUB, '', 'gh');
   gh.innerHTML = `${GH_ICON}<span>Star on GitHub</span>`;
-  const bar = h('div', { className: 'bar' }, h('nav', { className: 'nav', ariaLabel: 'Site' }, link('/docs.html', 'Docs', 'navlink'), gh));
+  const bar = h('div', { className: 'bar' }, h('nav', { className: 'nav', ariaLabel: 'Site' }, link('/docs.html', 'Docs', 'navlink'), link('/changelog/', 'What\'s new', 'navlink'), gh));
 
   // install: pick a framework, copy the command
   let fw: keyof typeof INSTALL = 'React';
