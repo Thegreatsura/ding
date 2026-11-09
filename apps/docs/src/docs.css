@@ -3,7 +3,7 @@
 .docs section{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;justify-items:start}
 .docs section>*{max-width:100%}
 .docs h2{padding:0;font-size:20px;font-weight:650;letter-spacing:-.01em;color:var(--ink)}
-.docs h3{margin:6px 0 -4px;font-size:13px;font-weight:600;color:var(--mute)}
+.docs h3{margin:16px 0 -4px;font-size:16px;font-weight:650;letter-spacing:-.01em;color:var(--ink)}
 .docs p{margin:0;max-width:62ch;color:#333;text-wrap:pretty}
 .docs section[id]{scroll-margin-block-start:0}
 code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
