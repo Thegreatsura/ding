@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ding docs: install and use spring-physics toasts in React, Svelte and JS</title>
-    <meta name="description" content="Install and use Ding, spring-physics toasts for React, Svelte and plain DOM. Setup, updating a toast in place, actions, options, sound and accessibility." />
+    <title>Ding docs: install and use spring-physics toasts in React, Svelte, Vue and JS</title>
+    <meta name="description" content="Install and use Ding, spring-physics toasts for React, Svelte, Vue and plain DOM. Setup, updating a toast in place, actions, options, sound and accessibility." />
     <link rel="canonical" href="https://ding.yusufcengiz.dev/docs.html" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -61,6 +61,7 @@
             <p data-for="react">Using shadcn/ui? This installs the package and adds a <code>ding-toaster.tsx</code> wrapper:</p>
             <pre data-for="react"><code>npx shadcn@latest add @ding/ding</code></pre>
             <pre data-for="svelte"><code>npm i @yusufceng1z/ding-svelte</code></pre>
+            <pre data-for="vue"><code>npm i @yusufceng1z/ding-vue</code></pre>
             <pre data-for="vanilla"><code>npm i @yusufceng1z/ding</code></pre>
           </section>
 
@@ -82,25 +83,49 @@ export default function App() {
 &lt;/script&gt;
 
 &lt;Toaster position="top-center" theme="system" /&gt;</code></pre>
+            <pre data-for="vue"><code>&lt;script setup&gt;
+import { Toaster } from '@yusufceng1z/ding-vue';
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;Toaster position="top-center" theme="system" /&gt;
+  &lt;!-- your app --&gt;
+&lt;/template&gt;</code></pre>
             <pre data-for="vanilla"><code>import { mountToaster } from '@yusufceng1z/ding';
 
 const unmount = mountToaster({ position: 'top-center' });</code></pre>
+            <h3 data-for="vue" id="nuxt">Nuxt</h3>
+            <p data-for="vue"><code>Toaster</code> draws nothing in place and starts after the page has loaded, so server rendering is safe. Put it in <code>app.vue</code> and call <code>toast</code> from client code, like a click handler or <code>onMounted</code>:</p>
+            <pre data-for="vue"><code>&lt;!-- app.vue --&gt;
+&lt;template&gt;
+  &lt;Toaster position="top-center" theme="system" /&gt;
+  &lt;NuxtPage /&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { Toaster } from '@yusufceng1z/ding-vue';
+&lt;/script&gt;</code></pre>
             <h3 data-for="react" id="nextjs">Next.js</h3>
-            <p data-for="react"><code>Toaster</code> uses hooks, so in the App Router it goes in a client component. Create <code>components/toaster.tsx</code>:</p>
-            <pre data-for="react"><code>"use client";
+            <p data-for="react">The package is marked <code>"use client"</code>, so <code>Toaster</code> goes straight into <code>app/layout.tsx</code>, which stays a server component:</p>
+            <pre data-for="react"><code>import { Toaster } from '@yusufceng1z/ding-react';
 
-import { Toaster } from '@yusufceng1z/ding-react';
-
-export function AppToaster() {
-  return &lt;Toaster position="top-center" theme="system" /&gt;;
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body&gt;
+        {children}
+        &lt;Toaster position="top-center" theme="system" /&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
 }</code></pre>
-            <p data-for="react">Render it once in <code>app/layout.tsx</code>, which can stay a server component. Call <code>toast</code> from client components only. The <a href="/nextjs-toast/">Next.js guide</a> covers the layout and server actions. With the Pages Router, render <code>&lt;Toaster /&gt;</code> in <code>pages/_app.tsx</code>, no wrapper needed.</p>
+            <p data-for="react">Call <code>toast</code> from client components only. The <a href="/nextjs-toast/">Next.js guide</a> covers server actions. With the Pages Router, render <code>&lt;Toaster /&gt;</code> in <code>pages/_app.tsx</code>.</p>
           </section>
 
           <section id="show">
             <h2>Show a toast</h2>
             <p>Import <code>toast</code> from the same package and call it from anywhere. Every call returns the toast id. <code>toast.loading(title)</code> works the same and stays until you update or dismiss it.</p>
-            <pre data-run="show"><code>import { toast } from '<span data-for="react">@yusufceng1z/ding-react</span><span data-for="svelte">@yusufceng1z/ding-svelte</span><span data-for="vanilla">@yusufceng1z/ding</span>';
+            <pre data-run="show"><code>import { toast } from '<span data-for="react">@yusufceng1z/ding-react</span><span data-for="svelte">@yusufceng1z/ding-svelte</span><span data-for="vue">@yusufceng1z/ding-vue</span><span data-for="vanilla">@yusufceng1z/ding</span>';
 
 toast.success('Saved');
 toast.error('Payment failed', { description: 'Card declined' });
@@ -167,6 +192,13 @@ toast.dismiss(id);  // one toast
 toast.dismiss();    // all</code></pre>
             <p>Position, theme and labels can also be set as props on the toaster. The toast follows reading direction, so right-to-left pages mirror automatically.</p>
             <p><code>labels</code> sets the names screen readers announce for the notifications region (<code>region</code>) and the close button (<code>dismiss</code>). Keys you leave out keep their English default, so a non-English page only needs to translate what it uses.</p>
+            <h3 id="csp">Content Security Policy</h3>
+            <p>Styles are injected as one <code>&lt;style&gt;</code> element. If your CSP blocks inline styles (<code>style-src</code> without <code>'unsafe-inline'</code>), pass the page's nonce. Per-toast values are set through the DOM, which CSP allows, so the stylesheet is the only thing that needs it.</p>
+            <pre data-for="react"><code>&lt;Toaster nonce={nonce} /&gt;</code></pre>
+            <pre data-for="svelte"><code>&lt;Toaster nonce={nonce} /&gt;</code></pre>
+            <pre data-for="vue"><code>&lt;Toaster :nonce="nonce" /&gt;</code></pre>
+            <pre data-for="vanilla"><code>mountToaster({ nonce });</code></pre>
+            <p data-for="react">In Next.js, read the nonce your proxy sets with <code>(await headers()).get('x-nonce')</code> in a server component and pass it down.</p>
           </section>
 
           <section id="sound">

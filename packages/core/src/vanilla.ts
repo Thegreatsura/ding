@@ -25,8 +25,11 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?:
   parent?.append(n);
   return n;
 };
-const svg = (cls: string, paths: readonly string[]) => {
+// width and height are a fallback for when the stylesheet is blocked (a wrong CSP nonce): without them an SVG fills its container
+const svg = (cls: string, paths: readonly string[], size: number) => {
   const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('width', String(size));
+  s.setAttribute('height', String(size));
   s.setAttribute('viewBox', '0 0 24 24');
   s.setAttribute('aria-hidden', 'true');
   s.setAttribute('class', cls);
@@ -40,10 +43,13 @@ const svg = (cls: string, paths: readonly string[]) => {
 };
 
 /** Framework-free renderer. Returns an unmount function. */
-export function mountToaster(opts: { position?: Position; theme?: Theme; labels?: Partial<ToastLabels> } = {}): () => void {
+export function mountToaster(
+  opts: { position?: Position; theme?: Theme; labels?: Partial<ToastLabels>; nonce?: string } = {},
+): () => void {
   if (typeof document === 'undefined') return () => {}; // server render: nothing to mount
-  injectStyles();
-  toast.configure(opts);
+  const { nonce, ...config } = opts;
+  injectStyles(document, { nonce });
+  toast.configure(config);
   const vp = el('div', 'tst-viewport', document.body);
   vp.setAttribute('role', 'region');
   const status = el('div', 'tst-sr', vp);
@@ -88,8 +94,8 @@ export function mountToaster(opts: { position?: Position; theme?: Theme; labels?
       if (n.type !== iconKey) {
         card.querySelector('.tst-icon')?.remove();
         const icon = el('div', 'tst-icon');
-        if (t.image) Object.assign(el('img', 'tst-media', icon), { src: t.image, alt: '' });
-        else el('div', 'tst-badge', icon).append(svg('tst-svg', ICONS[t.type]));
+        if (t.image) Object.assign(el('img', 'tst-media', icon), { src: t.image, alt: '', width: 28, height: 28 });
+        else el('div', 'tst-badge', icon).append(svg('tst-svg', ICONS[t.type], 22));
         card.prepend(icon);
         n.type = iconKey;
       }
@@ -127,7 +133,7 @@ export function mountToaster(opts: { position?: Position; theme?: Theme; labels?
           sec = el('button', 'tst-action tst-secondary');
           sec.type = 'button';
           sec.onclick = () => toast.act(t.id, 'secondary');
-          body.insertBefore(sec, body.querySelector('.tst-action'));
+          body.insertBefore(sec, body.querySelector('.tst-action, .tst-close'));
         }
         sec.textContent = t.secondary.label;
         sec.tabIndex = t.phase === 'open' ? 0 : -1;
@@ -136,8 +142,9 @@ export function mountToaster(opts: { position?: Position; theme?: Theme; labels?
       if (!t.action) act?.remove();
       else {
         if (!act) {
-          act = el('button', 'tst-action', body);
+          act = el('button', 'tst-action');
           act.type = 'button';
+          body.insertBefore(act, body.querySelector('.tst-close')); // a close button left from a sticky toast stays last
           act.onclick = () => toast.act(t.id);
         }
         act.textContent = t.action.label;
@@ -150,7 +157,7 @@ export function mountToaster(opts: { position?: Position; theme?: Theme; labels?
         if (!close) {
           close = el('button', 'tst-close', body);
           close.type = 'button';
-          close.append(svg('', ['M6 6l12 12M18 6L6 18']));
+          close.append(svg('', ['M6 6l12 12M18 6L6 18'], 12));
           close.onclick = () => toast.dismiss(t.id);
         }
         close.setAttribute('aria-label', s.labels.dismiss);
