@@ -73,7 +73,7 @@
 
       <section class="entry" aria-labelledby="motion-007">
         <h2 id="motion-007">Drag and animation cleanup <span class="tag">Fixed</span></h2>
-        <p><code>pointercancel</code> now resets a drag instead of flinging the toast. Unmounting stops its animation work, and two mounted Toasters both receive layout updates in the same frame. Escape and Alt+T still work when one of two plain DOM Toasters unmounts.</p>
+        <p><code>pointercancel</code> now resets a drag instead of flinging the toast. Unmounting stops its animation work, and two mounted Toasters both receive layout updates in the same frame. Escape and Alt+T keep working when one of two mounted Toasters unmounts, including React.</p>
       </section>
 
       <section class="entry" aria-labelledby="upgrade-007">
