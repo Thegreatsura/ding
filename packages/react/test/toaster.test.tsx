@@ -138,6 +138,21 @@ describe('React Toaster', () => {
     expect(size('.tst-media')).toEqual(['28', '28']);
   });
 
+  it('keeps Escape working after one of two Toasters unmounts', () => {
+    const App = ({ second }: { second: boolean }) => (
+      <>
+        {second && <Toaster position="bottom-right" />}
+        <Toaster />
+      </>
+    );
+    const { rerender } = render(<App second />);
+    let id = '';
+    act(() => void (id = toast.error('Still listening', { duration: 0 })));
+    rerender(<App second={false} />);
+    act(() => fireEvent.keyDown(document, { key: 'Escape', bubbles: true, cancelable: true }));
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
+  });
+
   it('puts the nonce on the injected stylesheet', () => {
     render(<Toaster nonce="abc123" />);
     const style = document.querySelector<HTMLStyleElement>('style[data-toast]');

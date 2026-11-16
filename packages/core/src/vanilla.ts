@@ -45,6 +45,22 @@ export function onToastKey(e: KeyboardEvent): void {
   }
 }
 
+/**
+ * Keep the shared document keydown listener alive while at least one Toaster is mounted.
+ * Duplicate listeners with the same callback are collapsed by the browser, so adapters must
+ * share one registration instead of adding and removing their own. Returns an idempotent release.
+ */
+export function retainToastKeys(): () => void {
+  if (typeof document === 'undefined') return () => {};
+  if (keyboardMounts++ === 0) document.addEventListener('keydown', onToastKey);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    if (--keyboardMounts === 0) document.removeEventListener('keydown', onToastKey);
+  };
+}
+
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?: Element) => {
   const n = document.createElement(tag);
   n.className = cls;
@@ -90,7 +106,7 @@ export function mountToaster(
   vp.addEventListener('focusout', (e) => {
     if (!vp.contains(e.relatedTarget as Node | null) && !vp.matches(':hover')) toast.resume();
   });
-  if (keyboardMounts++ === 0) document.addEventListener('keydown', onToastKey);
+  const releaseKeys = retainToastKeys();
 
   const nodes = new Map<string, { slot: HTMLElement; off?: () => void; type?: string }>();
 
@@ -206,7 +222,7 @@ export function mountToaster(
     if (!mounted) return;
     mounted = false;
     off();
-    if (--keyboardMounts === 0) document.removeEventListener('keydown', onToastKey);
+    releaseKeys();
     nodes.forEach((n) => n.off?.());
     vp.remove();
   };

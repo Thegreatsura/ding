@@ -1,6 +1,6 @@
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties } from 'react';
 import {
-  toast, injectStyles, bindToast, onToastKey, ICONS,
+  toast, injectStyles, bindToast, retainToastKeys, ICONS,
   type Position, type Theme, type ToastItem, type ToastLabels,
 } from '@yusufceng1z/ding';
 
@@ -93,10 +93,8 @@ export function Toaster({
   const region = labels?.region;
   const dismiss = labels?.dismiss;
   useEffect(() => toast.configure({ labels: { region, dismiss } }), [region, dismiss]);
-  useEffect(() => {
-    document.addEventListener('keydown', onToastKey);
-    return () => document.removeEventListener('keydown', onToastKey);
-  }, []);
+  // Shared and refcounted: two Toasters must not fight over one document listener.
+  useEffect(() => retainToastKeys(), []);
   const n = state.toasts.length;
   return (
     <div
