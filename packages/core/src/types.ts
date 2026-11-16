@@ -17,8 +17,8 @@ export interface ToastLabels {
 
 export interface ToastAction {
   label: string;
-  /** Return a patch to morph this toast in place (e.g. Undo → "Restored"). Return nothing to dismiss it. */
-  onClick: () => void | ToastPatch;
+  /** A synchronous patch morphs this toast; void or an async result closes it immediately. */
+  onClick: () => void | ToastPatch | Promise<void | ToastPatch>;
 }
 export interface ToastOptions {
   id?: string;

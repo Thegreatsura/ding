@@ -1,5 +1,5 @@
 import { toast, type Toaster } from './store';
-import { Spring, run } from './motion';
+import { Spring, run, stop } from './motion';
 import { getSpringConfigs, getSprings } from './styles';
 
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -9,32 +9,39 @@ const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
  * A held toast (an error, a button) stays while quick toasts come and go, so several can be on screen at once.
  * They sit in one column, the newest next to the screen edge (older ones are pushed away), as --tst-ey on each slot. Computed once per frame.
  */
+const layoutPending = new Set<Element>();
 let layoutQueued = false;
 function scheduleLayout(vp: Element | null) {
-  if (!vp || layoutQueued) return;
+  if (!vp) return;
+  layoutPending.add(vp);
+  if (layoutQueued) return;
   layoutQueued = true;
   requestAnimationFrame(() => {
     layoutQueued = false;
-    const gap = parseFloat(getComputedStyle(vp).getPropertyValue('--tst-gap')) || 8;
-    const slots = [...vp.querySelectorAll<HTMLElement>('.tst-slot')]
-      .map((s) => [Number(s.style.getPropertyValue('--tst-i')) || 0, s] as const)
-      .sort((a, b) => a[0] - b[0]);
-    const phaseOf = (s: HTMLElement) => s.firstElementChild?.getAttribute('data-phase');
-    const open = slots.filter(([, s]) => phaseOf(s) === 'enter' || phaseOf(s) === 'open').length;
-    if (open > 1) vp.setAttribute('data-list', '');
-    else if (slots.length <= 1) vp.removeAttribute('data-list');
-    let acc = 0;
-    for (const [, s] of slots) {
-      const v = `${acc}px`;
-      if (!s.style.getPropertyValue('--tst-ey')) {
-        // first placement: no glide from the top, the toast appears where it belongs
-        s.setAttribute('data-new', '');
-        requestAnimationFrame(() => requestAnimationFrame(() => s.removeAttribute('data-new')));
+    for (const vp of layoutPending) {
+      if (!vp.isConnected) continue;
+      const gap = parseFloat(getComputedStyle(vp).getPropertyValue('--tst-gap')) || 8;
+      const slots = [...vp.querySelectorAll<HTMLElement>('.tst-slot')]
+        .map((s) => [Number(s.style.getPropertyValue('--tst-i')) || 0, s] as const)
+        .sort((a, b) => a[0] - b[0]);
+      const phaseOf = (s: HTMLElement) => s.firstElementChild?.getAttribute('data-phase');
+      const open = slots.filter(([, s]) => phaseOf(s) === 'enter' || phaseOf(s) === 'open').length;
+      if (open > 1) vp.setAttribute('data-list', '');
+      else if (slots.length <= 1) vp.removeAttribute('data-list');
+      let acc = 0;
+      for (const [, s] of slots) {
+        const v = `${acc}px`;
+        if (!s.style.getPropertyValue('--tst-ey')) {
+          // first placement: no glide from the top, the toast appears where it belongs
+          s.setAttribute('data-new', '');
+          requestAnimationFrame(() => requestAnimationFrame(() => s.removeAttribute('data-new')));
+        }
+        if (s.style.getPropertyValue('--tst-ey') !== v) s.style.setProperty('--tst-ey', v);
+        // a toast that is closing no longer takes room, so the ones below glide up while it leaves
+        if (phaseOf(s) !== 'closing' && phaseOf(s) !== 'exit') acc += s.offsetHeight + gap;
       }
-      if (s.style.getPropertyValue('--tst-ey') !== v) s.style.setProperty('--tst-ey', v);
-      // a toast that is closing no longer takes room, so the ones below glide up while it leaves
-      if (phaseOf(s) !== 'closing' && phaseOf(s) !== 'exit') acc += s.offsetHeight + gap;
     }
+    layoutPending.clear();
   });
 }
 
@@ -107,6 +114,7 @@ function watchMotion(slot: HTMLElement, id: string, t: Toaster): () => void {
       apply();
     } else run(task);
   };
+  let reactTimer: ReturnType<typeof setTimeout> | undefined;
   const aim = () => {
     const open = phase === 'open';
     w.to = open ? fullW : SIZE;
@@ -172,7 +180,8 @@ function watchMotion(slot: HTMLElement, id: string, t: Toaster): () => void {
       h.tune(cfg.morph);
       if (phase === 'open') {
         w.v = -260; // anticipation: the dot squeezes in, then springs open
-        setTimeout(() => lastType && react(lastType), 200);
+        clearTimeout(reactTimer);
+        reactTimer = setTimeout(() => lastType && react(lastType), 200);
       }
     }
     if (phase !== 'exit') (aim(), kick());
@@ -258,6 +267,8 @@ function watchMotion(slot: HTMLElement, id: string, t: Toaster): () => void {
   tmo.observe(pill, { attributes: true, attributeFilter: ['data-type'] });
 
   return () => {
+    stop(task);
+    clearTimeout(reactTimer);
     clearTimeout(ready);
     imo.disconnect();
     tmo.disconnect();
@@ -305,20 +316,27 @@ function watchDrag(slot: HTMLElement, id: string, t: Toaster): () => void {
       slot.setAttribute('data-flung', '');
       slot.style.setProperty('--dx', `${(dx / len) * reach}px`);
       slot.style.setProperty('--dy', `${(rawDy / len) * reach}px`);
-      t.dismiss(id, { immediate: true });
+      t.close(id, { immediate: true });
     }
     else (slot.style.removeProperty('--dx'), slot.style.removeProperty('--dy'));
+  };
+  const cancel = () => {
+    if (!active) return;
+    active = false;
+    slot.removeAttribute('data-dragging');
+    slot.style.removeProperty('--dx');
+    slot.style.removeProperty('--dy');
   };
 
   slot.addEventListener('pointerdown', down);
   slot.addEventListener('pointermove', move);
   slot.addEventListener('pointerup', up);
-  slot.addEventListener('pointercancel', up);
+  slot.addEventListener('pointercancel', cancel);
   return () => {
     slot.removeEventListener('pointerdown', down);
     slot.removeEventListener('pointermove', move);
     slot.removeEventListener('pointerup', up);
-    slot.removeEventListener('pointercancel', up);
+    slot.removeEventListener('pointercancel', cancel);
   };
 }
 

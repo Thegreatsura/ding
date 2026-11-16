@@ -42,6 +42,37 @@ describe('React Toaster', () => {
     expect(container.querySelectorAll('.tst-slot')).toHaveLength(1);
   });
 
+  it('renders a reused explicit id once and distinct held ids in separate rows without key warnings', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const { container } = render(<Toaster />);
+      act(() => {
+        toast.error('First', { id: 'first' });
+        toast.error('First revised', { id: 'first' });
+        toast.error('Second', { id: 'second' });
+      });
+      expect(container.querySelectorAll('.tst-slot')).toHaveLength(2);
+      expect([...container.querySelectorAll('.tst-title')].map((x) => x.textContent)).toEqual(['First revised', 'Second']);
+      expect(error.mock.calls.flat().join(' ')).not.toMatch(/same key|unique key/i);
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it('Alt+T pauses a timed toast even after the pointer leaves, then resumes on blur', () => {
+    const { container } = render(<><button>Outside</button><Toaster /></>);
+    let id = '';
+    act(() => { id = toast.success('Timed', { duration: 1000 }); vi.advanceTimersByTime(450); });
+    act(() => fireEvent.keyDown(document, { key: 'T', altKey: true, code: '' }));
+    expect(document.activeElement?.closest('.tst-slot')).not.toBeNull();
+    act(() => fireEvent.pointerLeave(viewport(container)));
+    act(() => vi.advanceTimersByTime(1500));
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('open');
+    act(() => container.querySelector<HTMLButtonElement>('button')!.focus());
+    act(() => vi.advanceTimersByTime(1000));
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
+  });
+
   it('renders the viewport as a labelled region with its live regions', () => {
     const { container } = render(<Toaster />);
     const vp = viewport(container);
@@ -55,7 +86,7 @@ describe('React Toaster', () => {
     const { container } = render(<Toaster position="bottom-right" theme="dark" />);
     expect(toast.getState().position).toBe('bottom-right');
     expect(viewport(container).dataset.position).toBe('bottom-right');
-    expect(viewport(container).dataset.theme).toBe('dark');
+    expect(viewport(container).dataset.tstTheme).toBe('dark');
   });
 
   it('uses the labels prop for the region and the close button', () => {
@@ -83,6 +114,20 @@ describe('React Toaster', () => {
     expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
   });
 
+  it('closes the visible toast after its physical slot is taken over', () => {
+    const { container } = render(<Toaster />);
+    let old = '';
+    act(() => {
+      toast.configure({ held: 'replace' });
+      old = toast.error('Old');
+      toast.error('New');
+      toast.dismiss(old);
+    });
+    expect(toast.getState().toasts[0]?.phase).toBe('enter');
+    act(() => fireEvent.click(container.querySelector<HTMLButtonElement>('.tst-close')!));
+    expect(toast.getState().toasts[0]?.phase).toBe('closing');
+  });
+
   it('sizes its icons itself, so they stay small when the stylesheet is blocked', () => {
     const { container } = render(<Toaster />);
     act(() => void toast.error('Boom', { duration: 0 }));
@@ -91,6 +136,21 @@ describe('React Toaster', () => {
     expect(size('.tst-close svg')).toEqual(['12', '12']);
     act(() => void toast.info('Photo', { image: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=' }));
     expect(size('.tst-media')).toEqual(['28', '28']);
+  });
+
+  it('keeps Escape working after one of two Toasters unmounts', () => {
+    const App = ({ second }: { second: boolean }) => (
+      <>
+        {second && <Toaster position="bottom-right" />}
+        <Toaster />
+      </>
+    );
+    const { rerender } = render(<App second />);
+    let id = '';
+    act(() => void (id = toast.error('Still listening', { duration: 0 })));
+    rerender(<App second={false} />);
+    act(() => fireEvent.keyDown(document, { key: 'Escape', bubbles: true, cancelable: true }));
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
   });
 
   it('puts the nonce on the injected stylesheet', () => {

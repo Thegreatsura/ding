@@ -96,12 +96,63 @@ test('act(): a returned patch morphs the toast in place, nothing returned dismis
   mock.timers.reset();
 });
 
+test('async action closes immediately, rather than treating its Promise as a patch', async () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  try {
+    const t = createToaster();
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => { finish = resolve; });
+    const id = t.error('Deleted', { action: { label: 'Undo', onClick: () => pending } });
+    t.act(id);
+    assert.equal(t.getState().toasts[0]?.phase, 'closing');
+    finish();
+    await pending;
+    assert.equal(t.getState().toasts[0]?.phase, 'closing');
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test('an action creating a replacement toast cannot close or patch its successor', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  try {
+    const t = createToaster();
+    t.configure({ held: 'replace' });
+    const old = t.error('Deleted', { action: { label: 'Undo', onClick: () => { t.info('Restored'); } } });
+    t.act(old);
+    assert.equal(t.getState().toasts[0]?.title, 'Restored');
+    assert.equal(t.getState().toasts[0]?.phase, 'enter');
+    t.error('Again', { action: { label: 'Undo', onClick: () => {
+      t.info('Restored again');
+      return { title: 'Stale patch' };
+    } } });
+    t.act(t.getState().toasts[0]!.id);
+    assert.equal(t.getState().toasts[0]?.title, 'Restored again');
+    assert.equal(t.getState().toasts[0]?.phase, 'enter');
+  } finally {
+    mock.timers.reset();
+  }
+});
+
 test('identical toasts collapse into one with a count', () => {
   const t = createToaster();
   const id = t.success('Saved');
   assert.equal(t.success('Saved'), id);
   assert.equal(t.getState().toasts.length, 1);
   assert.equal(t.getState().toasts[0]?.count, 2);
+});
+
+test('same title with different duration or progress applies the new options instead of only bumping the count', () => {
+  const t = createToaster();
+  const sticky = t.success('Saved', { duration: 0 });
+  const timed = t.success('Saved', { duration: 1000 });
+  assert.notEqual(timed, sticky);
+  assert.deepEqual(t.getState().toasts.map(({ id, duration }) => ({ id, duration })),
+    [{ id: sticky, duration: 0 }, { id: timed, duration: 1000 }]);
+  const progress = t.success('Saved', { duration: 1000, progress: 0.5 });
+  assert.notEqual(progress, timed);
+  assert.equal(t.getState().toasts.at(-1)?.progress, 0.5);
+  t.dismiss();
 });
 
 test('a new toast morphs the live one instead of stacking; stale callers are ignored', () => {
@@ -121,6 +172,63 @@ test('a new toast morphs the live one instead of stacking; stale callers are ign
   mock.timers.reset();
 });
 
+test('a stale caller cannot dismiss the newer toast, but its current caller and dismiss-all can', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  t.configure({ held: 'replace' });
+  const old = t.loading('Old');
+  const current = t.error('New');
+  t.dismiss(old);
+  assert.equal(t.getState().toasts[0]?.phase, 'enter');
+  t.dismiss(current);
+  assert.equal(t.getState().toasts[0]?.phase, 'closing');
+  mock.timers.tick(TIMING.closing + TIMING.exit);
+  const next = t.error('Next');
+  t.dismiss();
+  assert.equal(t.getState().toasts.find((x) => x.id === next)?.phase, 'closing');
+  mock.timers.reset();
+});
+
+test('a repeat after takeover returns the owning caller id, which can update and dismiss', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  const old = t.loading('Preparing');
+  const current = t.loading('Saving', { description: 'draft' });
+  const repeated = t.loading('Saving', { description: 'draft' });
+  assert.notEqual(old, current);
+  assert.equal(repeated, current);
+  assert.equal(t.getState().toasts[0]?.count, 2);
+  t.update(repeated, { title: 'Saved' });
+  assert.equal(t.getState().toasts[0]?.title, 'Saved');
+  t.dismiss(repeated);
+  assert.equal(t.getState().toasts[0]?.phase, 'closing');
+  mock.timers.reset();
+});
+
+test('close() targets a visible toast by its physical id after takeover', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  const physical = t.loading('Preparing');
+  t.error('New message');
+  t.dismiss(physical);
+  assert.equal(t.getState().toasts[0]?.phase, 'enter');
+  t.close(physical);
+  assert.equal(t.getState().toasts[0]?.phase, 'closing');
+  mock.timers.reset();
+});
+
+test('auto-close still dismisses a physical slot after its caller has changed', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  const old = t.success('Old', { duration: 1000 });
+  mock.timers.tick(TIMING.openDelay);
+  t.success('New', { duration: 1000 });
+  assert.equal(t.getState().toasts[0]?.id, old);
+  mock.timers.tick(1000);
+  assert.equal(t.getState().toasts[0]?.phase, 'closing');
+  mock.timers.reset();
+});
+
 test('sound is off by default; a custom function hears every new status, not progress ticks', () => {
   mock.timers.enable({ apis: ['setTimeout', 'Date'] });
   const heard: string[] = [];
@@ -131,6 +239,145 @@ test('sound is off by default; a custom function hears every new status, not pro
   t.update(id, { type: 'success', title: 'Done' });
   t.error('Failed');
   assert.deepEqual(heard, ['success', 'error']);
+  mock.timers.reset();
+});
+
+test('progress ticks stay quiet, but completing with a new title announces the result', () => {
+  const t = createToaster();
+  const id = t.loading('Uploading', { progress: 0 });
+  const initial = t.getState().status;
+  t.update(id, { title: 'Uploading 50%', progress: 0.5 });
+  assert.equal(t.getState().status, initial);
+  t.update(id, { title: 'Uploaded', progress: 1 });
+  assert.match(t.getState().status, /^Uploaded/);
+});
+
+test('a failing custom sound callback does not stop the toast from opening', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  t.configure({ sound: () => { throw new Error('audio failed'); } });
+  const id = t.success('Saved');
+  mock.timers.tick(TIMING.openDelay);
+  assert.equal(t.getState().toasts.find((x) => x.id === id)?.phase, 'open');
+  mock.timers.reset();
+});
+
+test('nonvisual configure options do not notify renderers', () => {
+  const t = createToaster();
+  let calls = 0;
+  t.subscribe(() => calls++);
+  const before = t.getState();
+  t.configure({ sound: true, volume: 0.5, held: 'queue' });
+  assert.equal(calls, 0);
+  assert.equal(t.getState(), before);
+  t.configure({ theme: 'dark' });
+  assert.equal(calls, 1);
+  assert.equal(t.getState().theme, 'dark');
+});
+
+test('a synchronously throwing promise producer rejects and changes loading to error', async () => {
+  const t = createToaster();
+  const p = t.promise(
+    () => { throw new Error('failed before returning a promise'); },
+    { loading: 'Loading', success: 'Done', error: 'Failed' },
+  );
+  await assert.rejects(p, /failed before returning/);
+  assert.deepEqual(t.getState().toasts.map(({ type, title }) => ({ type, title })), [{ type: 'error', title: 'Failed' }]);
+});
+
+test('an explicit id updates its existing held toast instead of creating a duplicate', () => {
+  const t = createToaster();
+  t.error('First', { id: 'same' });
+  t.error('Second', { id: 'same' });
+  assert.deepEqual(t.getState().toasts.map(({ id, title }) => ({ id, title })), [{ id: 'same', title: 'Second' }]);
+  t.dismiss();
+});
+
+test('generated ids skip existing explicit ids', () => {
+  const t = createToaster();
+  t.error('Custom', { id: 'toast-1' });
+  const generated = t.error('Generated');
+  assert.notEqual(generated, 'toast-1');
+  assert.deepEqual(t.getState().toasts.map((x) => x.id), ['toast-1', generated]);
+  t.dismiss();
+});
+
+test('a queued explicit id is updated in place and generated ids skip queued ids', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  t.configure({ held: 'queue' });
+  const blocker = t.error('Blocker');
+  t.info('First version', { id: 'toast-2' });
+  t.info('Latest version', { id: 'toast-2' });
+  const next = t.info('Another queued toast');
+  assert.notEqual(next, 'toast-2');
+  t.dismiss(blocker);
+  mock.timers.tick(TIMING.closing);
+  mock.timers.tick(TIMING.exit);
+  assert.deepEqual(t.getState().toasts.map(({ id, title }) => ({ id, title })), [{ id: 'toast-2', title: 'Latest version' }]);
+  mock.timers.reset();
+});
+
+test('reusing an explicit id during closing revives the same toast', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  t.error('First', { id: 'same' });
+  t.dismiss('same');
+  t.error('Back again', { id: 'same' });
+  assert.deepEqual(t.getState().toasts.map(({ id, title, phase }) => ({ id, title, phase })),
+    [{ id: 'same', title: 'Back again', phase: 'open' }]);
+  mock.timers.tick(TIMING.closing + TIMING.exit);
+  assert.equal(t.getState().toasts.length, 1, 'old closing timer was cancelled');
+  mock.timers.reset();
+});
+
+test('list mode keeps distinct held rows independent when one id is reused or dismissed', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const t = createToaster();
+  const first = t.error('First', { id: 'first' });
+  const second = t.error('Second', { id: 'second' });
+  const quick = t.success('Quick');
+  assert.deepEqual(t.getState().toasts.map((x) => x.id), [first, second, quick]);
+  t.error('First changed', { id: first });
+  assert.deepEqual(t.getState().toasts.map((x) => x.title), ['First changed', 'Second', 'Quick']);
+  t.info('New quick'); // regular quick toasts still morph instead of stacking
+  assert.deepEqual(t.getState().toasts.map((x) => x.title), ['First changed', 'Second', 'New quick']);
+  t.dismiss(second);
+  mock.timers.tick(TIMING.closing);
+  mock.timers.tick(TIMING.exit);
+  assert.deepEqual(t.getState().toasts.map((x) => x.title), ['First changed', 'New quick']);
+  t.update(first, { title: 'Still independent' });
+  assert.deepEqual(t.getState().toasts.map((x) => x.title), ['Still independent', 'New quick']);
+  mock.timers.reset();
+});
+
+test('mixed id and phase operations never put duplicate ids on screen in any held mode', () => {
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  for (const held of ['list', 'queue', 'replace'] as const) {
+    const t = createToaster();
+    t.configure({ held });
+    const unique = () => {
+      const ids = t.getState().toasts.map((x) => x.id);
+      assert.equal(new Set(ids).size, ids.length, `duplicate IDs in ${held}: ${ids}`);
+    };
+    t.subscribe(unique);
+    t.error('First', { id: 'toast-1' });
+    t.error('Second', { id: 'other' });
+    t.error('First again', { id: 'toast-1' });
+    const generated = t.error('Generated');
+    assert.notEqual(generated, 'toast-1');
+    t.dismiss('other');
+    t.error('Second again', { id: 'other' });
+    t.success('Quick');
+    t.dismiss('toast-1');
+    t.error('First revived', { id: 'toast-1' });
+    mock.timers.tick(TIMING.openDelay);
+    unique();
+    t.dismiss();
+    mock.timers.tick(TIMING.closing);
+    mock.timers.tick(TIMING.exit);
+    unique();
+  }
   mock.timers.reset();
 });
 

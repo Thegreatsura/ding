@@ -1,6 +1,6 @@
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties } from 'react';
 import {
-  toast, injectStyles, bindToast, onToastKey, ICONS,
+  toast, injectStyles, bindToast, retainToastKeys, ICONS,
   type Position, type Theme, type ToastItem, type ToastLabels,
 } from '@yusufceng1z/ding';
 
@@ -62,7 +62,7 @@ function Item({ t, i, labels }: { t: ToastItem; i: number; labels: ToastLabels }
             </button>
           )}
           {sticky && (
-            <button type="button" className="tst-close" aria-label={labels.dismiss} tabIndex={t.phase === 'open' ? 0 : -1} onClick={() => toast.dismiss(t.id)}>
+            <button type="button" className="tst-close" aria-label={labels.dismiss} tabIndex={t.phase === 'open' ? 0 : -1} onClick={() => toast.close(t.id)}>
               <svg viewBox="0 0 24 24" width={12} height={12} aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
@@ -93,10 +93,8 @@ export function Toaster({
   const region = labels?.region;
   const dismiss = labels?.dismiss;
   useEffect(() => toast.configure({ labels: { region, dismiss } }), [region, dismiss]);
-  useEffect(() => {
-    document.addEventListener('keydown', onToastKey);
-    return () => document.removeEventListener('keydown', onToastKey);
-  }, []);
+  // Shared and refcounted: two Toasters must not fight over one document listener.
+  useEffect(() => retainToastKeys(), []);
   const n = state.toasts.length;
   return (
     <div
@@ -104,11 +102,11 @@ export function Toaster({
       role="region"
       aria-label={state.labels.region}
       data-position={state.position}
-      data-theme={state.theme}
+      data-tst-theme={state.theme}
       onPointerEnter={() => toast.pause()}
-      onPointerLeave={() => toast.resume()}
+      onPointerLeave={(e) => { if (!e.currentTarget.contains(document.activeElement)) toast.resume(); }}
       onFocus={(e) => e.target.matches(':focus-visible') && toast.pause()}
-      onBlur={() => toast.resume()}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null) && !e.currentTarget.matches(':hover')) toast.resume(); }}
     >
       <div className="tst-sr" role="status">
         {state.status}

@@ -2,3 +2,5 @@ node_modules
 dist
 .svelte-kit
 *.tsbuildinfo
+apps/docs/bug-lab/
+.release/

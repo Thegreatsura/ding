@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mountToaster, toast } from '../src/index.ts';
+import { bindToast, createToaster, mountToaster, onToastKey, toast } from '../src/index.ts';
 
 let unmount: (() => void) | undefined;
 
@@ -37,7 +37,7 @@ describe('mountToaster', () => {
     mount({ position: 'bottom-right', theme: 'dark' });
     expect(toast.getState().position).toBe('bottom-right');
     expect(viewport().dataset.position).toBe('bottom-right');
-    expect(viewport().dataset.theme).toBe('dark');
+    expect(viewport().dataset.tstTheme).toBe('dark');
   });
 
   it('uses the labels option for the region and the close button', () => {
@@ -64,6 +64,87 @@ describe('mountToaster', () => {
     expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
   });
 
+  it('closes a visible toast after another caller takes over its physical slot', () => {
+    mount({ held: 'replace' });
+    const old = toast.error('Old');
+    toast.error('New');
+    toast.dismiss(old);
+    expect(toast.getState().toasts[0]?.phase).toBe('enter');
+    document.querySelector<HTMLButtonElement>('.tst-close')!.click();
+    expect(toast.getState().toasts[0]?.phase).toBe('closing');
+  });
+
+  it('pointercancel resets a drag without dismissing or flinging the toast', () => {
+    mount();
+    const id = toast.error('Drag cancel');
+    const slot = document.querySelector<HTMLElement>('.tst-slot')!;
+    slot.setPointerCapture = () => {};
+    slot.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 1, clientX: 500, clientY: 300 }));
+    slot.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 500, clientY: 230 }));
+    slot.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId: 1, clientX: 0, clientY: 0 }));
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('enter');
+    expect(slot.hasAttribute('data-flung')).toBe(false);
+    expect(slot.hasAttribute('data-dragging')).toBe(false);
+    expect(slot.style.getPropertyValue('--dy')).toBe('');
+  });
+
+  it('still flings and dismisses on an actual pointerup', () => {
+    mount();
+    const id = toast.error('Drag away');
+    const slot = document.querySelector<HTMLElement>('.tst-slot')!;
+    slot.setPointerCapture = () => {};
+    slot.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 1, clientX: 500, clientY: 300 }));
+    slot.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 500, clientY: 230 }));
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('exit');
+    expect(slot.hasAttribute('data-flung')).toBe(true);
+  });
+
+  it('stops writing to a pill after unbinding its motion', () => {
+    const t = createToaster();
+    const id = t.success('Cleanup');
+    const vp = document.createElement('div');
+    vp.className = 'tst-viewport';
+    vp.dataset.position = 'top-right';
+    vp.innerHTML = '<div class="tst-slot"><div class="tst" data-phase="enter" data-type="success"><div class="tst-body"><div class="tst-copy"><div class="tst-title">Cleanup</div></div></div></div></div>';
+    document.body.append(vp);
+    const pill = vp.querySelector<HTMLElement>('.tst')!;
+    const unbind = bindToast(vp.querySelector<HTMLElement>('.tst-slot')!, id, t);
+    try {
+      unbind();
+      const before = pill.getAttribute('style');
+      vi.advanceTimersByTime(100);
+      expect(pill.getAttribute('style')).toBe(before);
+    } finally {
+      vp.remove();
+      t.dismiss();
+    }
+  });
+
+  it('lays out both viewports scheduled in the same frame', () => {
+    mount();
+    const second = mountToaster({ position: 'bottom-right' });
+    try {
+      toast.error('Two viewports');
+      vi.advanceTimersByTime(32);
+      const slots = [...document.querySelectorAll<HTMLElement>('.tst-viewport .tst-slot')];
+      expect(slots).toHaveLength(2);
+      expect(slots.map((s) => s.style.getPropertyValue('--tst-ey'))).toEqual(['0px', '0px']);
+    } finally {
+      second();
+    }
+  });
+
+  it('keeps keyboard shortcuts when one of two mounted toasters unmounts', () => {
+    mount();
+    const second = mountToaster({ position: 'bottom-right' });
+    second();
+    const id = toast.error('Still listening');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 't', code: 'KeyT', altKey: true, bubbles: true, cancelable: true }));
+    expect(document.activeElement?.closest('.tst-slot')?.querySelector('.tst-title')?.textContent).toBe('Still listening');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
+  });
+
   it('lists a held toast and a quick one together, each in its own slot', () => {
     mount();
     toast.error('Payment failed', { action: { label: 'Retry', onClick() {} } });
@@ -71,6 +152,113 @@ describe('mountToaster', () => {
     expect(document.querySelectorAll('.tst-slot')).toHaveLength(2);
     expect(document.querySelector('.tst-title')?.textContent).toBe('Payment failed');
   });
+
+  it('Alt+T focuses the newest toast even when keyboard code is unavailable', () => {
+    mount();
+    toast.error('Older');
+    toast.error('Newest');
+    const event = new KeyboardEvent('keydown', { key: 'T', altKey: true, bubbles: true, cancelable: true });
+    onToastKey(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(document.activeElement?.closest('.tst-slot')?.querySelector('.tst-title')?.textContent).toBe('Newest');
+    expect(document.activeElement?.closest('.tst-slot')?.hasAttribute('data-shortcut-focus')).toBe(true);
+  });
+
+  it('Alt+T keeps a timed toast paused until focus leaves the viewport', () => {
+    mount();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    const id = toast.success('Timed', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    onToastKey(new KeyboardEvent('keydown', { key: 't', altKey: true, cancelable: true }));
+    expect(document.activeElement?.closest('.tst-slot')).not.toBeNull();
+    viewport().dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(1500);
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('open');
+    outside.focus();
+    vi.advanceTimersByTime(1000);
+    expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
+    outside.remove();
+  });
+
+  it('Escape closes only the focused toast in list mode, not the other held toast', () => {
+    mount();
+    const first = toast.error('First');
+    const second = toast.error('Second');
+    vi.advanceTimersByTime(450);
+    document.querySelector<HTMLButtonElement>('.tst-slot .tst-close')!.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(toast.getState().toasts.find((t) => t.id === first)?.phase).toBe('closing');
+    expect(toast.getState().toasts.find((t) => t.id === second)?.phase).toBe('open');
+  });
+
+  it('Escape outside the viewport clears visible toasts and the queue', () => {
+    mount({ held: 'queue' });
+    const first = toast.error('First');
+    toast.error('Waiting');
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    expect(toast.getState().toasts.find((t) => t.id === first)?.phase).toBe('closing');
+    vi.advanceTimersByTime(340 + 220);
+    expect(toast.getState().toasts).toHaveLength(0);
+    outside.remove();
+  });
+
+  it('Escape on a focused queued toast advances the queue, and ignores dialogs or consumed keys', () => {
+    mount({ held: 'queue' });
+    toast.error('First');
+    toast.error('Waiting');
+    vi.advanceTimersByTime(450);
+    const dialog = document.createElement('dialog');
+    const input = document.createElement('input');
+    dialog.append(input);
+    document.body.append(dialog);
+    input.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    expect(toast.getState().toasts[0]?.phase).toBe('open');
+    const consumed = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    consumed.preventDefault();
+    document.dispatchEvent(consumed);
+    expect(toast.getState().toasts[0]?.phase).toBe('open');
+    document.querySelector<HTMLButtonElement>('.tst-close')!.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    vi.advanceTimersByTime(340 + 220);
+    expect(toast.getState().toasts.map((t) => t.title)).toEqual(['Waiting']);
+    dialog.remove();
+  });
+
+  it('Escape on a focused replace-mode toast closes it only once', () => {
+    mount({ held: 'replace' });
+    const old = toast.error('Old');
+    toast.error('New');
+    vi.advanceTimersByTime(450);
+    toast.dismiss(old);
+    expect(toast.getState().toasts[0]?.phase).toBe('open');
+    document.querySelector<HTMLButtonElement>('.tst-close')!.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    expect(toast.getState().toasts.map((t) => [t.title, t.phase])).toEqual([['New', 'closing']]);
+  });
+
+
+  it('reuses a named held slot while separate held toasts remain independently dismissible', () => {
+    mount();
+    toast.error('First', { id: 'first' });
+    toast.error('First revised', { id: 'first' });
+    const second = toast.error('Second');
+    expect(document.querySelectorAll('.tst-slot')).toHaveLength(2);
+    expect([...document.querySelectorAll('.tst-title')].map((x) => x.textContent)).toEqual(['First revised', 'Second']);
+    toast.dismiss('first');
+    vi.advanceTimersByTime(340);
+    vi.advanceTimersByTime(220);
+    expect(document.querySelectorAll('.tst-slot')).toHaveLength(1);
+    expect(toast.getState().toasts[0]?.id).toBe(second);
+  });
+
   it('keeps the close button last when a sticky toast morphs into one with an action', () => {
     mount({ held: 'replace' }); // a held toast is only morphed in this mode
     toast.error('Payment failed', { description: 'Card declined' }); // sticky: gets a close button first

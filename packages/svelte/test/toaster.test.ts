@@ -39,6 +39,21 @@ describe('Svelte Toaster', () => {
     expect(container.querySelectorAll('.tst-slot')).toHaveLength(1);
   });
 
+  it('reuses an explicit id without duplicating keyed rows and keeps a different id separate', () => {
+    const { container } = render(Toaster);
+    toast.error('First', { id: 'first' });
+    toast.error('First revised', { id: 'first' });
+    toast.error('Second', { id: 'second' });
+    flushSync();
+    expect(container.querySelectorAll('.tst-slot')).toHaveLength(2);
+    expect([...container.querySelectorAll('.tst-title')].map((x) => x.textContent)).toEqual(['First revised', 'Second']);
+    toast.dismiss('first');
+    vi.advanceTimersByTime(340);
+    vi.advanceTimersByTime(220);
+    flushSync();
+    expect([...container.querySelectorAll('.tst-title')].map((x) => x.textContent)).toEqual(['Second']);
+  });
+
   it('renders the viewport as a labelled region with its live regions', () => {
     const { container } = render(Toaster);
     const vp = viewport(container);
@@ -52,7 +67,7 @@ describe('Svelte Toaster', () => {
     const { container } = render(Toaster, { position: 'bottom-right', theme: 'dark' });
     expect(toast.getState().position).toBe('bottom-right');
     expect(viewport(container).dataset.position).toBe('bottom-right');
-    expect(viewport(container).dataset.theme).toBe('dark');
+    expect(viewport(container).dataset.tstTheme).toBe('dark');
   });
 
   it('uses the labels prop for the region and the close button', () => {
@@ -81,6 +96,18 @@ describe('Svelte Toaster', () => {
     expect(close).not.toBeNull();
     await fireEvent.click(close!);
     expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
+  });
+
+  it('closes the visible toast after its physical slot is taken over', async () => {
+    const { container } = render(Toaster);
+    toast.configure({ held: 'replace' });
+    const old = toast.error('Old');
+    toast.error('New');
+    toast.dismiss(old);
+    flushSync();
+    expect(toast.getState().toasts[0]?.phase).toBe('enter');
+    await fireEvent.click(container.querySelector<HTMLButtonElement>('.tst-close')!);
+    expect(toast.getState().toasts[0]?.phase).toBe('closing');
   });
 
   it('sizes its icons itself, so they stay small when the stylesheet is blocked', () => {

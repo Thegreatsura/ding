@@ -6,17 +6,59 @@ import type { HeldMode, Position, Theme, ToastItem, ToastLabels } from './types'
 
 // Escape belongs to what the user is working in: a dialog, menu or text field closes or clears itself first.
 const BUSY = 'dialog,[role=dialog],[aria-modal=true],[role=menu],[role=listbox],input,textarea,select,[contenteditable]';
+let keyboardMounts = 0;
 
 /** Shared keyboard handling for every adapter: Escape dismisses, Alt+T moves focus into the toast (which also pauses its timer). */
 export function onToastKey(e: KeyboardEvent): void {
   if (e.defaultPrevented || !toast.getState().toasts.length) return;
   if (e.key === 'Escape') {
-    if (!document.activeElement?.closest(BUSY)) toast.dismiss();
-  } else if (e.altKey && e.code === 'KeyT') {
+    const active = document.activeElement;
+    if (active?.closest(BUSY)) return;
+    const slot = active?.closest<HTMLElement>('.tst-viewport .tst-slot');
+    const slots = slot?.closest('.tst-viewport')?.querySelectorAll<HTMLElement>('.tst-slot');
+    const focused = slot && slots && toast.getState().toasts[[...slots].indexOf(slot)];
+    const id = focused && (focused.phase === 'enter' || focused.phase === 'open') ? focused.id : undefined;
+    if (slot && !id) return;
+    e.preventDefault();
+    if (id) toast.close(id);
+    else toast.dismiss();
+  } else if (e.altKey && (e.code === 'KeyT' || e.key.toLowerCase() === 't')) {
     // a button if the toast has one, otherwise the newest toast itself
     const slots = document.querySelectorAll<HTMLElement>('.tst-viewport .tst-slot');
-    (document.querySelector<HTMLElement>('.tst-viewport button:not([tabindex="-1"])') ?? slots[slots.length - 1])?.focus();
+    const newest = slots[slots.length - 1];
+    const target = newest?.querySelector<HTMLElement>('button:not([tabindex="-1"])') ?? newest;
+    if (target) {
+      e.preventDefault();
+      const slot = target.closest<HTMLElement>('.tst-slot');
+      if (slot && !slot.hasAttribute('data-shortcut-focus')) {
+        slot.setAttribute('data-shortcut-focus', '');
+        const clear = (event: FocusEvent) => {
+          if (slot.contains(event.relatedTarget as Node | null)) return;
+          slot.removeAttribute('data-shortcut-focus');
+          slot.removeEventListener('focusout', clear);
+        };
+        slot.addEventListener('focusout', clear);
+      }
+      target.focus();
+      toast.pause();
+    }
   }
+}
+
+/**
+ * Keep the shared document keydown listener alive while at least one Toaster is mounted.
+ * Duplicate listeners with the same callback are collapsed by the browser, so adapters must
+ * share one registration instead of adding and removing their own. Returns an idempotent release.
+ */
+export function retainToastKeys(): () => void {
+  if (typeof document === 'undefined') return () => {};
+  if (keyboardMounts++ === 0) document.addEventListener('keydown', onToastKey);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    if (--keyboardMounts === 0) document.removeEventListener('keydown', onToastKey);
+  };
 }
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?: Element) => {
@@ -57,10 +99,14 @@ export function mountToaster(
   const alert = el('div', 'tst-sr', vp);
   alert.setAttribute('role', 'alert');
   vp.onpointerenter = () => toast.pause();
-  vp.onpointerleave = () => toast.resume();
+  vp.onpointerleave = () => {
+    if (!vp.contains(document.activeElement)) toast.resume();
+  };
   vp.addEventListener('focusin', (e) => (e.target as Element).matches(':focus-visible') && toast.pause());
-  vp.addEventListener('focusout', () => toast.resume());
-  document.addEventListener('keydown', onToastKey);
+  vp.addEventListener('focusout', (e) => {
+    if (!vp.contains(e.relatedTarget as Node | null) && !vp.matches(':hover')) toast.resume();
+  });
+  const releaseKeys = retainToastKeys();
 
   const nodes = new Map<string, { slot: HTMLElement; off?: () => void; type?: string }>();
 
@@ -74,7 +120,7 @@ export function mountToaster(
   function render() {
     const s = toast.getState();
     vp.dataset.position = s.position;
-    vp.dataset.theme = s.theme;
+    vp.dataset.tstTheme = s.theme;
     vp.setAttribute('aria-label', s.labels.region);
     status.textContent = s.status;
     alert.textContent = s.alert;
@@ -159,7 +205,7 @@ export function mountToaster(
           close = el('button', 'tst-close', body);
           close.type = 'button';
           close.append(svg('', ['M6 6l12 12M18 6L6 18'], 12));
-          close.onclick = () => toast.dismiss(t.id);
+          close.onclick = () => toast.close(t.id);
         }
         close.setAttribute('aria-label', s.labels.dismiss);
         close.tabIndex = t.phase === 'open' ? 0 : -1;
@@ -171,9 +217,12 @@ export function mountToaster(
 
   const off = toast.subscribe(render);
   render();
+  let mounted = true;
   return () => {
+    if (!mounted) return;
+    mounted = false;
     off();
-    document.removeEventListener('keydown', onToastKey);
+    releaseKeys();
     nodes.forEach((n) => n.off?.());
     vp.remove();
   };

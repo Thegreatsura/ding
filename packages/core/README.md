@@ -27,7 +27,13 @@ toast.promise(save(), {
 });
 ```
 
-Only one toast shows at a time. A new call morphs the toast on screen instead of stacking a second one. Options, actions, progress, sound and accessibility are covered in the [docs](https://ding.yusufcengiz.dev/docs.html).
+New calls morph a quick toast in place; errors and other held toasts keep their place by default. Options, actions, progress, sound and accessibility are covered in the [docs](https://ding.yusufcengiz.dev/docs.html).
+
+## 0.0.7 behavior note
+
+`toast.dismiss(id)` still accepts the ID returned by `toast.*()`, and `toast.dismiss()` still closes all toasts. When a newer call takes over a visible toast, an older call's ID can no longer dismiss the newer message. Custom renderers using `toast.dismiss(item.id)` for their close button should use `toast.close(item.id)` instead: `item.id` identifies the visible slot, which may differ from the newest caller's ID.
+
+An action returning a synchronous patch still morphs the toast. An async action closes it on click; its resolved value is not applied as a patch. Show its result with a separate toast, or use `toast.promise(...)` for loading-to-result morphing.
 
 ## Links
 

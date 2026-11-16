@@ -44,6 +44,19 @@ describe('Vue Toaster', () => {
     expect(document.querySelectorAll('.tst-slot')).toHaveLength(1);
   });
 
+  it('reuses an explicit id in one DOM slot while a different id remains independent', () => {
+    mountToaster();
+    toast.error('First', { id: 'first' });
+    toast.error('First revised', { id: 'first' });
+    toast.error('Second', { id: 'second' });
+    expect(document.querySelectorAll('.tst-slot')).toHaveLength(2);
+    expect([...document.querySelectorAll('.tst-title')].map((x) => x.textContent)).toEqual(['First revised', 'Second']);
+    toast.dismiss('first');
+    vi.advanceTimersByTime(340);
+    vi.advanceTimersByTime(220);
+    expect([...document.querySelectorAll('.tst-title')].map((x) => x.textContent)).toEqual(['Second']);
+  });
+
   it('renders the viewport as a labelled region with its live regions', () => {
     mountToaster();
     expect(viewport().getAttribute('role')).toBe('region');
@@ -56,14 +69,14 @@ describe('Vue Toaster', () => {
     mountToaster({ position: 'bottom-right', theme: 'dark' });
     expect(toast.getState().position).toBe('bottom-right');
     expect(viewport().dataset.position).toBe('bottom-right');
-    expect(viewport().dataset.theme).toBe('dark');
+    expect(viewport().dataset.tstTheme).toBe('dark');
   });
 
   it('follows prop changes after mount', async () => {
     mountToaster({ position: 'top-center', theme: 'light' });
     await wrapper!.setProps({ position: 'bottom-left', theme: 'dark', labels: { region: 'Alertes' } });
     expect(viewport().dataset.position).toBe('bottom-left');
-    expect(viewport().dataset.theme).toBe('dark');
+    expect(viewport().dataset.tstTheme).toBe('dark');
     expect(viewport().getAttribute('aria-label')).toBe('Alertes');
   });
 
@@ -89,6 +102,17 @@ describe('Vue Toaster', () => {
     expect(close).not.toBeNull();
     close!.click();
     expect(toast.getState().toasts.find((t) => t.id === id)?.phase).toBe('closing');
+  });
+
+  it('closes the visible toast after its physical slot is taken over', () => {
+    mountToaster();
+    toast.configure({ held: 'replace' });
+    const old = toast.error('Old');
+    toast.error('New');
+    toast.dismiss(old);
+    expect(toast.getState().toasts[0]?.phase).toBe('enter');
+    document.querySelector<HTMLButtonElement>('.tst-close')!.click();
+    expect(toast.getState().toasts[0]?.phase).toBe('closing');
   });
 
   it('puts the nonce on the injected stylesheet', () => {

@@ -37,11 +37,11 @@
   role="region"
   aria-label={state.labels.region}
   data-position={state.position}
-  data-theme={state.theme}
+  data-tst-theme={state.theme}
   onpointerenter={() => toast.pause()}
-  onpointerleave={() => toast.resume()}
+  onpointerleave={(e) => { if (!e.currentTarget.contains(document.activeElement)) toast.resume(); }}
   onfocusin={(e) => (e.target as Element).matches(':focus-visible') && toast.pause()}
-  onfocusout={() => toast.resume()}
+  onfocusout={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null) && !e.currentTarget.matches(':hover')) toast.resume(); }}
 >
   <div class="tst-sr" role="status">{state.status}</div>
   <div class="tst-sr" role="alert">{state.alert}</div>
@@ -91,7 +91,7 @@
             </button>
           {/if}
           {#if t.duration === 0 && t.type !== 'loading' && !t.secondary}
-            <button type="button" class="tst-close" aria-label={state.labels.dismiss} tabindex={t.phase === 'open' ? 0 : -1} onclick={() => toast.dismiss(t.id)}>
+            <button type="button" class="tst-close" aria-label={state.labels.dismiss} tabindex={t.phase === 'open' ? 0 : -1} onclick={() => toast.close(t.id)}>
               <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
             </button>
           {/if}
