@@ -37,7 +37,9 @@ export function chime(type: ToastType, volume = 0.5): void {
   if (!cue || typeof AudioContext === 'undefined') return;
   try {
     ctx ??= new AudioContext();
-    if (ctx.state === 'suspended') void ctx.resume();
+    if (ctx.state === 'suspended') void ctx.resume().catch(() => {
+      // Autoplay policy or a closed device may reject; sound must stay optional.
+    });
     if (ctx.state === 'closed') return;
     const master = ctx.createGain();
     master.gain.value = Math.min(1, Math.max(0, volume)) * 0.45;

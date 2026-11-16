@@ -106,7 +106,7 @@ opacity:calc(var(--tp)*1.5 - .25);filter:blur(calc((1 - var(--tp))*10px));transf
 .tst-count,.tst-meta{margin-inline-start:6px;opacity:.7}
 .tst-meta{font-weight:450;font-size:12px}
 .tst-timer{position:absolute;inset:auto 0 0 0;height:2px;background:var(--c);opacity:.45;transform-origin:left;animation:tst-timer var(--tst-life) linear forwards;pointer-events:none}
-.tst-viewport:hover .tst-timer,.tst-viewport:has(:focus-visible) .tst-timer{animation-play-state:paused}
+.tst-viewport:hover .tst-timer,.tst-viewport:has(:focus-visible) .tst-timer,.tst-viewport:has(.tst-slot[data-shortcut-focus]:focus-within) .tst-timer{animation-play-state:paused}
 .tst-viewport:dir(rtl) .tst-timer{transform-origin:right}
 .tst-ghost{position:absolute;inset-inline-start:0;top:0;pointer-events:none}
 .tst-progress{position:absolute;inset:auto 0 0 0;height:3px;background:color-mix(in srgb,var(--on) 14%,transparent);opacity:var(--tp);pointer-events:none}
@@ -124,11 +124,11 @@ transition-property:background-color,scale;transition-duration:.15s;transition-t
 /* 30px look, 44px target: taller hit area, narrow enough sideways that neighbours (8px apart) never overlap */
 .tst-action::before,.tst-close::before{content:'';position:absolute;inset:-7px -3px}
 .tst-slot:focus-visible{outline:none}
-.tst-slot:focus-visible .tst{outline:2px solid var(--on);outline-offset:-5px}
+.tst-slot:focus-visible .tst,.tst-slot[data-shortcut-focus]:focus-within .tst{outline:2px solid var(--on);outline-offset:-5px}
 .tst-close svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
 @media (hover:hover){.tst-action:hover{background:color-mix(in srgb,var(--on) 82%,var(--fill))}.tst-secondary:hover,.tst-close:hover{background:color-mix(in srgb,var(--on) 10%,transparent);color:var(--on)}}
 .tst-action:not(:disabled):active,.tst-close:not(:disabled):active{scale:.96}
-.tst-action:focus-visible,.tst-close:focus-visible{outline:2px solid var(--on);outline-offset:2px}
+.tst-action:focus-visible,.tst-close:focus-visible,.tst-slot[data-shortcut-focus] .tst-action:focus,.tst-slot[data-shortcut-focus] .tst-close:focus{outline:2px solid var(--on);outline-offset:2px}
 
 @keyframes tst-out{to{transform:translateY(calc(var(--tst-dir)*12px)) scale(.92);opacity:0;filter:blur(4px)}}
 @keyframes tst-swap{from{opacity:0;scale:.25;filter:blur(4px)}}

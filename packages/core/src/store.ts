@@ -61,8 +61,12 @@ export function createToaster() {
   };
   /** Text goes into stable, always-mounted live regions. The trailing NBSP toggle re-announces identical text. */
   const announce = (type: ToastType, title: string, description?: string) => {
-    if (typeof sound === 'function') sound(type);
-    else if (sound) chime(type, volume);
+    try {
+      if (typeof sound === 'function') sound(type);
+      else if (sound) chime(type, volume);
+    } catch {
+      // Sound is optional; a broken custom player must not prevent the toast from opening.
+    }
     flip = !flip;
     const text = (description ? `${title}. ${description}` : title) + (flip ? '\u00a0' : '');
     state = { ...state, [type === 'error' ? 'alert' : 'status']: text };
@@ -79,34 +83,49 @@ export function createToaster() {
     e.lifeTimer = undefined;
     if (find(id)?.phase !== 'open' || e.paused || e.remaining <= 0) return;
     e.startedAt = Date.now();
-    e.lifeTimer = setTimeout(() => dismiss(id), e.remaining);
+    e.lifeTimer = setTimeout(() => close(id), e.remaining);
   }
 
   function show(type: ToastType, title: string, opts: ToastOptions = {}): string {
     if (opts.id === undefined && !opts.action && !opts.secondary && !opts.image && !opts.meta && !opts.className) {
       // only a repeat of the newest toast collapses; an older identical one stays separate
       const dup = state.toasts.at(-1);
-      if (dup && dup.type === type && dup.title === title && dup.description === opts.description && (dup.phase === 'enter' || dup.phase === 'open')) {
+      if (dup && dup.type === type && dup.title === title && dup.description === opts.description &&
+          dup.duration === (opts.duration ?? autoDuration(type, false)) && dup.progress === opts.progress &&
+          (dup.phase === 'enter' || dup.phase === 'open')) {
         bump(dup.id);
-        return dup.id;
+        return owner.get(dup.id) ?? dup.id;
       }
     }
-    const id = opts.id ?? `toast-${++counter}`;
+    let id = opts.id ?? `toast-${++counter}`;
+    if (opts.id === undefined) {
+      while (entries.has(id) || live.has(id) || pending.some((x) => x.id === id)) id = `toast-${++counter}`;
+    }
     const open = state.toasts.filter((t) => t.phase === 'enter' || t.phase === 'open');
     const holds = (opts.duration ?? autoDuration(type, !!(opts.action || opts.secondary))) === 0;
     const isHeld = (t: ToastItem) => entries.get(t.id)?.base === 0 && t.type !== 'loading';
-    if (held === 'queue' && !releasing && (open.some(isHeld) || pending.length)) {
+    const waiting = opts.id !== undefined ? pending.find((x) => x.id === id) : undefined;
+    if (waiting) {
+      Object.assign(waiting, { type, title, opts, holds });
+      return id;
+    }
+    const same = opts.id !== undefined ? find(live.get(id) ?? id) : undefined;
+    if (held === 'queue' && !releasing && !same && (open.some(isHeld) || pending.length)) {
       // a real queue: everything waits its turn, in order, and is shown once the toast before it is gone
       pending.push({ id, type, title, opts, holds });
       return id;
     }
-    let cur = open.at(-1);
-    if (held === 'list') {
+    let cur = same ?? open.at(-1);
+    if (held === 'list' && !same) {
       // a held toast keeps its own slot. A quick toast reuses the newest quick slot, or opens one next to the held ones.
       if (!holds) cur = open.filter((t) => !isHeld(t)).at(-1);
       else if (cur && isHeld(cur)) cur = undefined;
     }
     if (cur) {
+      if (same && (same.phase === 'closing' || same.phase === 'exit')) {
+        clearTimeout(entries.get(same.id)?.phaseTimer);
+        patch(same.id, { phase: 'open' });
+      }
       live.set(id, cur.id);
       owner.set(cur.id, id);
       patch(cur.id, { count: 1 });
@@ -183,7 +202,10 @@ export function createToaster() {
     }
     if (p.duration !== undefined || p.type !== undefined || p.action !== undefined || p.secondary !== undefined) (e.base = e.remaining, patch(id, { duration: e.remaining }));
     startLife(id);
-    const quiet = p.progress !== undefined && p.type === undefined; // progress ticks must not spam screen readers
+    // Progress ticks stay silent, but a completed progress bar with new copy is a result worth announcing.
+    const quiet = p.progress !== undefined && p.type === undefined &&
+      !(p.progress === 1 && ((p.title !== undefined && p.title !== t.title) ||
+        (p.description !== undefined && p.description !== t.description)));
     if (!quiet && (p.title !== undefined || p.description !== undefined || p.type !== undefined)) {
       announce(p.type ?? t.type, p.title ?? t.title, p.description ?? t.description);
     }
@@ -191,9 +213,14 @@ export function createToaster() {
 
   /** Run a toast's action. A returned patch morphs the toast in place; otherwise it closes. */
   function act(id: string, which: 'action' | 'secondary' = 'action') {
-    const result = find(id)?.[which]?.onClick();
-    if (result && typeof result === 'object') apply(id, { action: null, secondary: null, ...result });
-    else dismiss(id);
+    const current = find(id);
+    const caller = owner.get(id);
+    const result = current?.[which]?.onClick();
+    // The handler may replace this slot synchronously. Never mutate or close its new owner.
+    if (!current || owner.get(id) !== caller || find(id) !== current) return;
+    if (result && typeof result === 'object' && !('then' in result)) {
+      apply(id, { action: null, secondary: null, ...result });
+    } else close(id);
   }
 
   function bump(id: string) {
@@ -205,12 +232,19 @@ export function createToaster() {
     startLife(id);
   }
 
-  /** immediate: skip the text-erase/shrink step (used after a drag-away) */
+  /** Dismiss by a call's returned id; an older caller cannot close a newer message. */
   function dismiss(id?: string, opts: { immediate?: boolean } = {}) {
-    if (id === undefined) return (pending.length = 0, state.toasts.forEach((t) => dismiss(t.id, opts)));
+    if (id === undefined) return (pending.length = 0, state.toasts.forEach((t) => close(t.id, opts)));
     const waiting = pending.findIndex((x) => x.id === id);
     if (waiting >= 0) return void pending.splice(waiting, 1);
-    id = live.get(id) ?? id;
+    const callerId = id;
+    id = live.get(callerId) ?? callerId;
+    if (owner.get(id) !== callerId) return void live.delete(callerId);
+    close(id, opts);
+  }
+
+  /** Close a visible toast by ToastItem.id, regardless of its caller. For renderers and drag-away. */
+  function close(id: string, opts: { immediate?: boolean } = {}) {
     const t = find(id);
     const e = entries.get(id);
     if (!t || !e || t.phase === 'exit' || (t.phase === 'closing' && !opts.immediate)) return;
@@ -253,7 +287,12 @@ export function createToaster() {
 
   function promise<T>(p: Promise<T> | (() => Promise<T>), m: PromiseMessages<T>): Promise<T> {
     const id = show('loading', m.loading);
-    const pr = typeof p === 'function' ? p() : p;
+    let pr: Promise<T>;
+    try {
+      pr = typeof p === 'function' ? p() : p;
+    } catch (err) {
+      pr = Promise.reject(err);
+    }
     pr.then(
       (v) => update(id, { type: 'success', title: typeof m.success === 'function' ? m.success(v) : m.success }),
       (err) => update(id, { type: 'error', title: typeof m.error === 'function' ? m.error(err) : m.error }),
@@ -272,6 +311,7 @@ export function createToaster() {
     update,
     act,
     dismiss,
+    close,
     pause,
     resume,
     configure(c: {
@@ -298,14 +338,14 @@ export function createToaster() {
       if (c.icons) setIcons(c.icons);
       if (c.sound !== undefined) sound = c.sound;
       if (c.volume !== undefined) volume = c.volume;
-      state = {
-        ...state,
-        ...(c.position && { position: c.position }),
-        ...(c.theme && { theme: c.theme }),
-        // undefined keys are skipped so `{ region: undefined }` keeps the current label
-        ...(c.labels && { labels: { ...state.labels, ...definedOnly(c.labels) } }),
-      };
-      emit();
+      // undefined keys are skipped so `{ region: undefined }` keeps the current label
+      const labels = c.labels ? { ...state.labels, ...definedOnly(c.labels) } : state.labels;
+      if ((c.position && c.position !== state.position) ||
+          (c.theme && c.theme !== state.theme) ||
+          labels.region !== state.labels.region || labels.dismiss !== state.labels.dismiss) {
+        state = { ...state, position: c.position ?? state.position, theme: c.theme ?? state.theme, labels };
+        emit();
+      }
     },
     subscribe(fn: () => void) {
       subs.add(fn);

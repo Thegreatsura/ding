@@ -47,3 +47,11 @@ export function run(task: (dt: number) => boolean): void {
     raf = requestAnimationFrame(tick);
   }
 }
+/** Remove a bound element's task when its renderer unmounts. */
+export function stop(task: (dt: number) => boolean): void {
+  tasks.delete(task);
+  if (!tasks.size && raf) {
+    cancelAnimationFrame(raf);
+    raf = 0;
+  }
+}

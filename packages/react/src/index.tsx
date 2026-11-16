@@ -62,7 +62,7 @@ function Item({ t, i, labels }: { t: ToastItem; i: number; labels: ToastLabels }
             </button>
           )}
           {sticky && (
-            <button type="button" className="tst-close" aria-label={labels.dismiss} tabIndex={t.phase === 'open' ? 0 : -1} onClick={() => toast.dismiss(t.id)}>
+            <button type="button" className="tst-close" aria-label={labels.dismiss} tabIndex={t.phase === 'open' ? 0 : -1} onClick={() => toast.close(t.id)}>
               <svg viewBox="0 0 24 24" width={12} height={12} aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
@@ -106,9 +106,9 @@ export function Toaster({
       data-position={state.position}
       data-tst-theme={state.theme}
       onPointerEnter={() => toast.pause()}
-      onPointerLeave={() => toast.resume()}
+      onPointerLeave={(e) => { if (!e.currentTarget.contains(document.activeElement)) toast.resume(); }}
       onFocus={(e) => e.target.matches(':focus-visible') && toast.pause()}
-      onBlur={() => toast.resume()}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null) && !e.currentTarget.matches(':hover')) toast.resume(); }}
     >
       <div className="tst-sr" role="status">
         {state.status}
