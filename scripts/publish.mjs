@@ -52,10 +52,13 @@ Usage:
   node scripts/publish.mjs --otp 123456
   node scripts/publish.mjs --otp=123456 --no-verify
   NPM_OTP=123456 node scripts/publish.mjs
+  script -qec "node scripts/publish.mjs --web" /dev/null
 
 Options:
   --dry-run       Pack, verify and run npm publish --dry-run. Uploads nothing.
   --otp <code>    One-time password; also read from NPM_OTP.
+  --web           Let npm print a browser approval link. Needs a TTY, use the
+                  script command above. Each write may need its own approval.
   --no-verify     Skip typecheck and tests (the build always runs).
   --allow-dirty   Publish with uncommitted changes.
   --help          Show this help.
@@ -66,9 +69,16 @@ Options:
 const dryRun = flag('--dry-run');
 const verify = !flag('--no-verify');
 const allowDirty = flag('--allow-dirty');
+const web = flag('--web');
 const otp = option('--otp') || process.env.NPM_OTP;
 
 if (otp && !/^\d{6,8}$/.test(otp)) fail('The OTP must be a 6 to 8 digit code.');
+
+// npm only offers its browser approval link when both streams are a TTY.
+const interactive = web && !otp && !dryRun;
+if (interactive && (!process.stdin.isTTY || !process.stdout.isTTY)) {
+  fail('--web needs a TTY. Run it as: script -qec "node scripts/publish.mjs --web" /dev/null');
+}
 
 const pnpm = (() => {
   const local = spawnSync('pnpm', ['--version'], { stdio: 'ignore' });
@@ -169,23 +179,31 @@ for (const pkg of packages) {
   if (dryRun) args.push('--dry-run');
 
   info(`${dryRun ? 'Dry-run publishing' : 'Publishing'} ${pkg.name}@${pkg.version}`);
-  const result = run('npm', args, { capture: true, allowFailure: true });
-  process.stdout.write(result.stdout ?? '');
-  process.stderr.write(result.stderr ?? '');
+  if (interactive) {
+    // Inherit the TTY so npm can run its browser approval flow and stream the link.
+    args.push('--browser=false');
+    console.log('  npm will print an approval link below; open it to continue.');
+    const result = run('npm', args);
+    if (result.status !== 0) fail(`Publishing ${pkg.name} failed with exit code ${result.status}.`);
+  } else {
+    const result = run('npm', args, { capture: true, allowFailure: true });
+    process.stdout.write(result.stdout ?? '');
+    process.stderr.write(result.stderr ?? '');
 
-  if (result.status !== 0) {
-    const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
-    if (/EOTP|one-time password|two-factor/i.test(output)) {
-      fail('npm asked for a one-time password. Re-run with --otp <code>; published packages are skipped.', 3);
+    if (result.status !== 0) {
+      const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+      if (/EOTP|one-time password|two-factor/i.test(output)) {
+        fail('npm asked for a one-time password. Re-run with --otp <code> or --web; published packages are skipped.', 3);
+      }
+      if (/auth\/cli|complete authentication|web authentication/i.test(output)) {
+        const url = output.match(/https:\/\/\S+/)?.[0];
+        fail(`npm needs browser authentication${url ? `: ${url}` : ''}. Finish it, then re-run this script; published packages are skipped.`, 3);
+      }
+      if (/E403|E401|forbidden|unauthorized/i.test(output)) {
+        fail('npm rejected the credentials. Run `npm login` and try again.', 4);
+      }
+      fail(`Publishing ${pkg.name} failed.`, 1);
     }
-    if (/auth\/cli|complete authentication|web authentication/i.test(output)) {
-      const url = output.match(/https:\/\/\S+/)?.[0];
-      fail(`npm needs browser authentication${url ? `: ${url}` : ''}. Finish it, then re-run this script; published packages are skipped.`, 3);
-    }
-    if (/E403|E401|forbidden|unauthorized/i.test(output)) {
-      fail('npm rejected the credentials. Run `npm login` and try again.', 4);
-    }
-    fail(`Publishing ${pkg.name} failed.`, 1);
   }
 
   published++;
