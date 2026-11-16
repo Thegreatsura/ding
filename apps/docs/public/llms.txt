@@ -23,17 +23,18 @@ Render the toaster once, near the root.
 
 ## API
 
-All calls return the toast id. Import `toast` from the package.
+Show calls return a caller ID; `toast.promise()` returns the supplied promise. Import `toast` from the package.
 
 - `toast.success(title, options?)`, `toast.error`, `toast.warning`, `toast.info`, `toast.loading`
 - `toast.promise(promise, { loading, success, error })` morphs one toast from loading to the result
 - `toast.update(id, patch)` changes a live toast in place. A patch may set title, description, type, duration, progress, action, secondary, meta, image. `null` removes action, secondary, meta, image and progress.
-- `toast.dismiss(id?)` closes one toast, or all
+- `toast.dismiss(id?)` closes a caller's toast, or all; an older caller cannot dismiss a newer message after takeover
+- `toast.close(item.id)` closes the visible toast by its `ToastItem.id`, for custom renderers and close controls. Custom renderers using `toast.dismiss(item.id)` before 0.0.7 must switch to `toast.close(item.id)`; built-in renderers are already updated
 - `toast.configure({ position, theme, labels, sound, volume, held })`. `labels: { region, dismiss }` sets the accessible names of the region and the close button (English by default)
 
 Options: `description`, `action { label, onClick }`, `secondary { label, onClick }`, `image` (avatar URL), `meta` (small trailing text), `progress` (0 to 1), `duration` (ms, 0 stays until dismissed), `id`.
 
-`onClick` may return a patch. The toast then morphs in place instead of closing. A returned patch removes the buttons unless it names them again.
+`onClick` may return a synchronous patch. The toast then morphs in place instead of closing. A returned patch removes the buttons unless it names them again. An async handler starts closing the toast on click; its resolved value is not applied as a patch. Show a separate result toast, or use `toast.promise()` to morph loading to a result.
 
 Positions: top-left, top-center, top-right, bottom-left, bottom-center, bottom-right. Themes: system, light, dark.
 

@@ -29,7 +29,7 @@
         "description": "Install Ding in React, Svelte, Vue or plain JS. Toast calls, options, CSS variables, sound, accessibility and Content Security Policy.",
         "url": "https://ding.yusufcengiz.dev/docs.html",
         "datePublished": "2026-11-06",
-        "dateModified": "2026-11-14",
+        "dateModified": "2026-11-16",
         "author": {
           "@type": "Person",
           "name": "Yusuf Cengiz",
@@ -182,7 +182,7 @@ toast.success('Saved');
 toast.error('Payment failed', { description: 'Card declined' });
 toast.warning('Storage almost full');
 toast.info('New version available');</code></pre>
-            <p>Only one toast is visible at a time. A new call morphs the toast on screen instead of stacking a second one. Repeating the same toast adds a counter (×2).</p>
+            <p>Without a held toast, a new call morphs the live toast instead of stacking another one. Errors, action toasts and <code>duration: 0</code> toasts may appear side by side in the default <code>held: 'list'</code> mode. Repeating the same toast adds a counter (×2).</p>
           </section>
 
           <section id="update">
@@ -202,7 +202,7 @@ toast.update(id, { type: 'success', title: 'Photo uploaded', progress: null });<
 
           <section id="actions">
             <h2>Actions</h2>
-            <p>An <code>onClick</code> may return a patch. The toast then morphs in place instead of closing. A returned patch removes the buttons unless it names them again.</p>
+            <p>A synchronous <code>onClick</code> may return a patch. The toast then morphs in place instead of closing. A returned patch removes the buttons unless it names them again. An async action instead starts closing the toast when clicked; its resolved value is not used as a patch. Show its outcome in a separate toast, or use <code>toast.promise()</code> for loading-to-result morphing.</p>
             <pre data-run="undo"><code>toast.success('Message deleted', {
   action: {
     label: 'Undo',
@@ -240,8 +240,10 @@ toast.update(id, { type: 'success', title: 'Photo uploaded', progress: null });<
   held: 'list',             // list, queue, replace: see Held toasts below
 });
 
-toast.dismiss(id);  // one toast
-toast.dismiss();    // all</code></pre>
+toast.dismiss(id);     // close a toast using its caller ID
+toast.dismiss();       // all
+toast.close(item.id);  // close a visible item in a custom renderer</code></pre>
+            <p><code>dismiss(id)</code> uses the ID returned by a toast call. After a newer call takes over, the old ID cannot close it. A custom renderer's close button should use <code>toast.close(item.id)</code> to close the visible item by its physical ID. If you used <code>dismiss(item.id)</code> in a custom renderer before 0.0.7, change that call to <code>close(item.id)</code>. Built-in React, Svelte, Vue and plain DOM renderers already do this.</p>
             <p>Position, theme and labels can also be set as props on the toaster. The toast follows reading direction, so right-to-left pages mirror automatically.</p>
             <p><code>labels</code> sets the names screen readers announce for the notifications region (<code>region</code>) and the close button (<code>dismiss</code>). Keys you leave out keep their English default, so a non-English page only needs to translate what it uses.</p>
             <h3 id="held">Held toasts</h3>

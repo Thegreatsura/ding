@@ -24,7 +24,7 @@
 
 ## Why Ding
 
-- **One toast at a time.** A new call morphs the toast on screen instead of stacking a second one.
+- **Morphs by default.** New calls reuse a quick toast; errors and other held toasts keep their place unless you choose `held: 'replace'`.
 - **Real springs.** Size, shape and text move on a spring solver, so interrupting an animation keeps its momentum.
 - **No stylesheet.** Styles are injected from JavaScript. Nothing to import.
 - **Light, dark and system themes**, six positions, right-to-left support.
@@ -117,7 +117,7 @@ toast.info('New version available');
 toast.loading('Uploading…');
 ```
 
-Every call returns the toast id.
+Toast show calls return a caller ID; `toast.promise()` returns the supplied promise.
 
 ### Promises and updates
 
@@ -137,7 +137,7 @@ Only the newest caller can update the shared toast, so a slow request that finis
 
 ### Actions
 
-An `onClick` may return a patch. The toast then morphs in place instead of closing.
+A synchronous `onClick` may return a patch to morph the toast in place. An async action closes on click; show its outcome as a separate toast, or use `toast.promise()` for a loading-to-result morph.
 
 ```ts
 toast.success('Message deleted', {
@@ -179,6 +179,8 @@ toast.configure({
 toast.dismiss(id); // one toast
 toast.dismiss();   // all
 ```
+
+`dismiss(id)` uses the id returned by a toast call. If a newer call takes over that toast, dismissing the old id does nothing. Custom renderers should use `toast.close(item.id)` to close the visible toast by its `ToastItem.id`; this also works after a takeover.
 
 ### Held toasts
 

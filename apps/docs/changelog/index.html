@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ding 0.0.6: errors no longer get buried</title>
-    <meta name="description" content="Ding 0.0.6 keeps an error toast on screen when another toast arrives, and adds a held option to choose list, queue or replace." />
+    <title>Ding 0.0.7: safer toast IDs and actions</title>
+    <meta name="description" content="Ding 0.0.7 protects newer toasts from stale IDs, fixes async actions, drag cancellation and animation cleanup across React, Svelte, Vue and plain JS." />
     <link rel="canonical" href="https://ding.yusufcengiz.dev/changelog/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -13,23 +13,23 @@
     <link rel="stylesheet" href="/changelog.css" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="Ding" />
-    <meta property="og:title" content="What's new in Ding 0.0.6" />
-    <meta property="og:description" content="An error toast stays on screen when another toast arrives. New held option: list, queue or replace." />
+    <meta property="og:title" content="What's new in Ding 0.0.7" />
+    <meta property="og:description" content="Safer toast IDs, async actions, drag cancellation and multi-toaster layout." />
     <meta property="og:url" content="https://ding.yusufcengiz.dev/changelog/" />
     <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ding 0.0.6: errors no longer get buried" />
-    <meta name="twitter:description" content="Ding 0.0.6 keeps an error toast on screen when another toast arrives, and adds a held option to choose list, queue or replace." />
+    <meta name="twitter:title" content="Ding 0.0.7: safer toast IDs and actions" />
+    <meta name="twitter:description" content="Safer toast IDs, async actions, drag cancellation and multi-toaster layout." />
     <meta name="twitter:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "TechArticle",
-        "headline": "What's new in Ding 0.0.6",
-        "description": "An error toast stays on screen when another toast arrives. New held option: list, queue or replace.",
+        "headline": "What's new in Ding 0.0.7",
+        "description": "Safer toast IDs, async actions, drag cancellation and multi-toaster layout.",
         "url": "https://ding.yusufcengiz.dev/changelog/",
-        "datePublished": "2026-11-14",
-        "dateModified": "2026-11-14",
+        "datePublished": "2026-11-16",
+        "dateModified": "2026-11-16",
         "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
         "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
       }
@@ -46,10 +46,46 @@
       <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
     </nav>
     <main>
-      <h1>What's new in Ding 0.0.6</h1>
-      <p class="version">Errors no longer get buried. One default changes, and one option brings the old behavior back.</p>
-      <p class="lead">An error with a Retry button used to be replaced by the next toast, so it could be missed. Now it stays on screen. The demos below run the shipped library.</p>
-      <pre><code>npm i @yusufceng1z/ding@latest</code></pre>
+      <h1>What's new in Ding 0.0.7</h1>
+      <p class="version">Safer caller IDs, more predictable actions and steadier motion.</p>
+      <p class="lead">A late operation should not close a newer message. This release also fixes async Undo, cancelled drags, animation cleanup and two-toaster layout across the built-in renderers.</p>
+      <pre><code>npm i @yusufceng1z/ding@0.0.7</code></pre>
+
+      <section class="entry" aria-labelledby="id-safety">
+        <h2 id="id-safety">Old IDs leave newer messages alone <span class="tag">Fixed</span></h2>
+        <p><code>toast.dismiss(id)</code> still accepts the ID returned by a toast call, but an older call can no longer dismiss the message that took over its slot. Repeated toasts return a usable caller ID; generated IDs avoid collisions with custom IDs.</p>
+        <div class="demo" role="group" aria-label="Caller ID demo">
+          <p>Open a loading toast, replace it, then try the old caller ID and the visible item's close control.</p>
+          <div class="row">
+            <button type="button" id="id-start">1. Loading</button>
+            <button type="button" id="id-replace" disabled>2. Replace</button>
+            <button type="button" id="id-stale" disabled>3. Dismiss old ID</button>
+            <button type="button" id="id-close" disabled>4. Close visible item</button>
+          </div>
+          <p id="id-result" role="status" aria-live="polite">Start with Loading.</p>
+        </div>
+      </section>
+
+      <section class="entry" aria-labelledby="actions-007">
+        <h2 id="actions-007">Async actions close on click <span class="tag">Fixed</span></h2>
+        <p>A synchronous action can still return a patch to morph the toast. An async action starts closing the old toast when clicked; its resolved value is not treated as a patch. Show its result as another toast, or use <code>toast.promise()</code> to morph a loading toast to its result. An action that opens a new toast no longer accidentally closes it.</p>
+      </section>
+
+      <section class="entry" aria-labelledby="motion-007">
+        <h2 id="motion-007">Drag and animation cleanup <span class="tag">Fixed</span></h2>
+        <p><code>pointercancel</code> now resets a drag instead of flinging the toast. Unmounting stops its animation work, and two mounted Toasters both receive layout updates in the same frame. Escape and Alt+T still work when one of two plain DOM Toasters unmounts.</p>
+      </section>
+
+      <section class="entry" aria-labelledby="upgrade-007">
+        <h2 id="upgrade-007">Upgrading a custom renderer <span class="tag">Changed</span></h2>
+        <p><code>toast.dismiss(id)</code> and <code>toast.dismiss()</code> remain available. If your custom close button used <code>toast.dismiss(item.id)</code>, switch it to <code>toast.close(item.id)</code>: the visible item's physical ID may differ from its newest caller ID. The built-in React, Svelte, Vue and plain DOM renderers are already updated. See <a href="/docs.html#configure">the API reference</a>. Thanks to <a href="https://github.com/jvz-devx">Jens</a> for the <code>close(id)</code> distinction and repeat-ID regression.</p>
+      </section>
+
+      <section class="entry" aria-labelledby="release-006">
+        <h2 id="release-006">Ding 0.0.6 — held toasts</h2>
+        <p class="version">Errors no longer get buried. One default changed, and one option brought the old behavior back.</p>
+        <p>An error with a Retry button used to be replaced by the next toast, so it could be missed. Now it stays on screen. The demos below still run the library.</p>
+      </section>
 
       <section class="entry" aria-labelledby="held">
         <h2 id="held">A toast that waits for you keeps its place <span class="tag">Fixed</span></h2>
@@ -92,7 +128,7 @@
 
       <section class="entry" aria-labelledby="dev">
         <h2 id="dev">Older releases</h2>
-        <p><a href="/changelog/0-0-5/">What's new in 0.0.5</a> · <a href="/changelog/0-0-4/">What's new in 0.0.4</a> · <a href="/changelog/0-0-3/">What's new in 0.0.3</a></p>
+        <p><a href="#release-006">What's new in 0.0.6</a> · <a href="/changelog/0-0-5/">What's new in 0.0.5</a> · <a href="/changelog/0-0-4/">What's new in 0.0.4</a> · <a href="/changelog/0-0-3/">What's new in 0.0.3</a></p>
       </section>
 
       <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
