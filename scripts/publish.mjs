@@ -23,6 +23,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = ['packages/core', 'packages/react', 'packages/vue', 'packages/svelte'];
 const argv = process.argv.slice(2);
 
+// Query the registry directly: `npm view` caches the packument and can lag behind a fresh publish.
+const registry = execFileSync('npm', ['config', 'get', 'registry'], { encoding: 'utf8' }).trim().replace(/\/$/, '');
+
 const flag = (name) => argv.includes(name);
 const option = (name) => {
   const index = argv.indexOf(name);
@@ -159,17 +162,17 @@ for (const pkg of packages) {
   ok(`${pkg.name} packaged (${created[0]})`);
 }
 
-function isPublished(pkg) {
-  const result = run('npm', ['view', `${pkg.name}@${pkg.version}`, 'version', '--json'], { capture: true, allowFailure: true });
-  if (result.status === 0) return true;
-  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
-  if (/E404|404 Not Found/i.test(output)) return false;
-  fail(`Could not ask npm about ${pkg.name}@${pkg.version}:\n${output.trim()}`);
+async function isPublished(pkg) {
+  const url = `${registry}/${encodeURIComponent(pkg.name)}/${pkg.version}`;
+  const response = await fetch(url, { cache: 'no-store', headers: { accept: 'application/json' } });
+  if (response.status === 200) return true;
+  if (response.status === 404) return false;
+  fail(`Could not ask the registry about ${pkg.name}@${pkg.version}: HTTP ${response.status}.`);
 }
 
 let published = 0;
 for (const pkg of packages) {
-  if (isPublished(pkg)) {
+  if (await isPublished(pkg)) {
     console.log(`↷ ${pkg.name}@${pkg.version} is already on npm; skipping.`);
     continue;
   }
@@ -208,8 +211,13 @@ for (const pkg of packages) {
 
   published++;
   if (!dryRun) {
-    const check = run('npm', ['view', `${pkg.name}@${pkg.version}`, 'version'], { capture: true, allowFailure: true });
-    if (check.status !== 0) fail(`Published ${pkg.name}, but the registry does not show ${pkg.version} yet.`);
+    let live = await isPublished(pkg);
+    if (!live) console.log('  waiting for the registry to show the new version...');
+    for (let attempt = 0; !live && attempt < 30; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      live = await isPublished(pkg);
+    }
+    if (!live) fail(`Published ${pkg.name}, but the registry still does not show ${pkg.version} after 90 seconds.`);
   }
   ok(`${pkg.name}@${pkg.version} ${dryRun ? 'is publishable' : 'is live'}`);
 }
