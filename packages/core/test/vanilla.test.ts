@@ -405,6 +405,20 @@ describe('tab visibility', () => {
     expect(phase(id)).toBe('closing');
   });
 
+  it('holds the countdown bar where it was while the tab is hidden', () => {
+    mount();
+    toast.success('Deleted', { duration: 2200, action: { label: 'Undo', onClick() {} } });
+    vi.advanceTimersByTime(450 + 300);
+    const timer = document.querySelector<HTMLElement>('.tst-timer')!;
+    // happy-dom does not run CSS animations: stand in for the bar's CSSAnimation.
+    const bar = { currentTime: 750 as number | null };
+    timer.getAnimations = () => [bar as unknown as Animation];
+    setHidden(true);
+    bar.currentTime = 750 + 3000; // the browser keeps the bar running in a background tab
+    setHidden(false);
+    expect(bar.currentTime).toBe(750);
+  });
+
   it('lets a toast that is already leaving finish while the tab is hidden', () => {
     mount();
     const id = toast.success('Saved', { duration: 1000 });

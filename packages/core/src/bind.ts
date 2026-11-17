@@ -340,9 +340,30 @@ function watchDrag(slot: HTMLElement, id: string, t: Toaster): () => void {
   };
 }
 
+/**
+ * The countdown bar is a CSS animation, and browsers keep running it in a background tab while the store
+ * holds the auto-close timer. Note where the bar was when the tab is hidden and put it back on return,
+ * so it still shows the time left. Setting currentTime keeps the hover/focus `animation-play-state` rules working.
+ */
+function watchTimerBar(slot: HTMLElement) {
+  let held: { anim: Animation; at: CSSNumberish | null } | undefined;
+  const onVisibility = () => {
+    if (document.hidden) {
+      const anim = slot.querySelector('.tst-timer')?.getAnimations()[0];
+      held = anim && { anim, at: anim.currentTime };
+    } else if (held) {
+      if (held.at !== null && slot.querySelector('.tst-timer')?.getAnimations()[0] === held.anim) held.anim.currentTime = held.at;
+      held = undefined;
+    }
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+  return () => document.removeEventListener('visibilitychange', onVisibility);
+}
+
 /** Adapter hook-up: call with the `.tst-slot` element (its first child is the pill). Returns cleanup. */
 export function bindToast(slot: HTMLElement, id: string, t: Toaster = toast): () => void {
   const stopDrag = watchDrag(slot, id, t);
   const stopMotion = watchMotion(slot, id, t);
-  return () => (stopDrag(), stopMotion());
+  const stopTimerBar = watchTimerBar(slot);
+  return () => (stopDrag(), stopMotion(), stopTimerBar());
 }
