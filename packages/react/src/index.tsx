@@ -1,69 +1,167 @@
-import { useEffect, useRef, useSyncExternalStore, type CSSProperties } from 'react';
+
 import {
-  toast, injectStyles, bindToast, retainToastKeys, ICONS,
-  type Position, type Theme, type ToastItem, type ToastLabels,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+  type CSSProperties,
+} from 'react';
+
+import {
+  toast,
+  injectStyles,
+  bindToast,
+  retainToastKeys,
+  ICONS,
+  type Position,
+  type Theme,
+  type ToastItem,
+  type ToastLabels,
 } from '@yusufceng1z/ding';
 
 export { toast };
 export type { Position, Theme, ToastLabels };
 
-function Item({ t, i, labels }: { t: ToastItem; i: number; labels: ToastLabels }) {
-  const slot = useRef<HTMLDivElement>(null);
-  useEffect(() => (slot.current ? bindToast(slot.current, t.id) : undefined), [t.id]);
-  const sticky = t.duration === 0 && t.type !== 'loading' && !t.secondary;
+type ItemProps = {
+  toast: ToastItem;
+  index: number;
+  labels: ToastLabels;
+};
+
+function Item({ toast: item, index, labels }: ItemProps) {
+  const slotRef = useRef<HTMLDivElement>(null);
+
+  const isSticky =
+    item.duration === 0 &&
+    item.type !== 'loading' &&
+    !item.secondary;
+
+  useEffect(() => {
+    if (!slotRef.current) return;
+
+    return bindToast(slotRef.current, item.id);
+  }, [item.id]);
+
+  const slotStyle = {
+    '--tst-i': index,
+  } as CSSProperties;
+
+  const toastStyle = {
+    '--tst-life': `${item.duration}ms`,
+  } as CSSProperties;
+
+  const progressStyle = {
+    '--pg': item.progress,
+  } as CSSProperties;
+
+  const handleAction = () => toast.act(item.id);
+
+  const handleSecondaryAction = () =>
+    toast.act(item.id, 'secondary');
+
+  const handleDismiss = () => toast.close(item.id);
+
   return (
-    <div ref={slot} className="tst-slot" tabIndex={-1} style={{ '--tst-i': i } as CSSProperties}>
+    <div
+      ref={slotRef}
+      className="tst-slot"
+      tabIndex={-1}
+      style={slotStyle}
+    >
       <div
-        className={t.className ? `tst ${t.className}` : 'tst'}
-        data-phase={t.phase}
-        data-type={t.type}
-        // Announced through the viewport's persistent live regions, not here.
-        style={{ '--tst-life': `${t.duration}ms` } as CSSProperties}
+        className={item.className ? `tst ${item.className}` : 'tst'}
+        data-phase={item.phase}
+        data-type={item.type}
+        style={toastStyle}
       >
-        {(t.action || t.secondary) && t.duration > 0 && <div className="tst-timer" key={t.duration} />}
-        {t.progress !== undefined && <div className="tst-progress" style={{ '--pg': t.progress } as CSSProperties} />}
+        {(item.action || item.secondary) && item.duration > 0 && (
+          <div className="tst-timer" key={item.duration} />
+        )}
+
+        {item.progress !== undefined && (
+          <div className="tst-progress" style={progressStyle} />
+        )}
+
         <div className="tst-icon">
-          {t.image ? (
-            <img className="tst-media" src={t.image} alt="" width={28} height={28} />
+          {item.image ? (
+            <img
+              className="tst-media"
+              src={item.image}
+              alt=""
+              width={28}
+              height={28}
+            />
           ) : (
             <div className="tst-badge">
-              <svg className="tst-svg" viewBox="0 0 24 24" width={22} height={22} aria-hidden="true">
-                {ICONS[t.type].map((d) => (
-                  <path key={d} d={d} pathLength={1} />
+              <svg
+                className="tst-svg"
+                viewBox="0 0 24 24"
+                width={22}
+                height={22}
+                aria-hidden="true"
+              >
+                {ICONS[item.type].map((path) => (
+                  <path key={path} d={path} pathLength={1} />
                 ))}
               </svg>
             </div>
           )}
         </div>
+
         <div className="tst-body">
           <div className="tst-copy">
             <div className="tst-title">
-              {t.title}
-              {t.count > 1 && <span className="tst-count">×{t.count}</span>}
-              {t.meta && <span className="tst-meta">{t.meta}</span>}
+              {item.title}
+
+              {item.count > 1 && (
+                <span className="tst-count">×{item.count}</span>
+              )}
+
+              {item.meta && (
+                <span className="tst-meta">{item.meta}</span>
+              )}
             </div>
-            {t.description && <div className="tst-desc">{t.description}</div>}
+
+            {item.description && (
+              <div className="tst-desc">{item.description}</div>
+            )}
           </div>
-          {t.secondary && (
-            <button type="button" className="tst-action tst-secondary" tabIndex={t.phase === 'open' ? 0 : -1} onClick={() => toast.act(t.id, 'secondary')}>
-              {t.secondary.label}
+
+          {item.secondary && (
+            <button
+              type="button"
+              className="tst-action tst-secondary"
+              tabIndex={item.phase === 'open' ? 0 : -1}
+              onClick={handleSecondaryAction}
+            >
+              {item.secondary.label}
             </button>
           )}
-          {t.action && (
+
+          {item.action && (
             <button
               type="button"
               className="tst-action"
-              tabIndex={t.phase === 'open' ? 0 : -1}
-              onClick={() => {
-                toast.act(t.id);
-              }}
+              tabIndex={item.phase === 'open' ? 0 : -1}
+              onClick={handleAction}
             >
-              {t.action.label}
+              {item.action.label}
             </button>
           )}
-          {sticky && (
-            <button type="button" className="tst-close" aria-label={labels.dismiss} tabIndex={t.phase === 'open' ? 0 : -1} onClick={() => toast.close(t.id)}>
-              <svg viewBox="0 0 24 24" width={12} height={12} aria-hidden="true">
+
+          {isSticky && (
+            <button
+              type="button"
+              className="tst-close"
+              aria-label={labels.dismiss}
+              tabIndex={item.phase === 'open' ? 0 : -1}
+              onClick={handleDismiss}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width={12}
+                height={12}
+                aria-hidden="true"
+              >
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
@@ -74,28 +172,44 @@ function Item({ t, i, labels }: { t: ToastItem; i: number; labels: ToastLabels }
   );
 }
 
+type ToasterProps = {
+  position?: Position;
+  theme?: Theme;
+  labels?: Partial<ToastLabels>;
+  nonce?: string;
+};
+
 export function Toaster({
   position,
   theme,
   labels,
   nonce,
-}: {
-  position?: Position;
-  theme?: Theme;
-  labels?: Partial<ToastLabels>;
-  /** CSP nonce for the injected stylesheet. */
-  nonce?: string;
-}) {
-  const state = useSyncExternalStore(toast.subscribe, toast.getState, toast.getState);
-  useEffect(() => injectStyles(document, { nonce }), [nonce]);
-  useEffect(() => toast.configure({ position, theme }), [position, theme]);
-  // Keyed on the strings, not the object, so an inline `labels={{ ... }}` does not reconfigure every render.
+}: ToasterProps) {
+  const state = useSyncExternalStore(
+    toast.subscribe,
+    toast.getState,
+    toast.getState,
+  );
+
   const region = labels?.region;
   const dismiss = labels?.dismiss;
-  useEffect(() => toast.configure({ labels: { region, dismiss } }), [region, dismiss]);
-  // Shared and refcounted: two Toasters must not fight over one document listener.
+
+  useEffect(() => {
+    injectStyles(document, { nonce });
+  }, [nonce]);
+
+  useEffect(() => {
+    toast.configure({ position, theme });
+  }, [position, theme]);
+
+  useEffect(() => {
+    toast.configure({ labels: { region, dismiss } });
+  }, [region, dismiss]);
+
   useEffect(() => retainToastKeys(), []);
-  const n = state.toasts.length;
+
+  const toastCount = state.toasts.length;
+
   return (
     <div
       className="tst-viewport"
@@ -104,18 +218,40 @@ export function Toaster({
       data-position={state.position}
       data-tst-theme={state.theme}
       onPointerEnter={() => toast.pause()}
-      onPointerLeave={(e) => { if (!e.currentTarget.contains(document.activeElement)) toast.resume(); }}
-      onFocus={(e) => e.target.matches(':focus-visible') && toast.pause()}
-      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null) && !e.currentTarget.matches(':hover')) toast.resume(); }}
+      onPointerLeave={(event) => {
+        if (!event.currentTarget.contains(document.activeElement)) {
+          toast.resume();
+        }
+      }}
+      onFocus={(event) => {
+        if (event.target.matches(':focus-visible')) {
+          toast.pause();
+        }
+      }}
+      onBlur={(event) => {
+        if (
+          !event.currentTarget.contains(event.relatedTarget as Node | null) &&
+          !event.currentTarget.matches(':hover')
+        ) {
+          toast.resume();
+        }
+      }}
     >
       <div className="tst-sr" role="status">
         {state.status}
       </div>
+
       <div className="tst-sr" role="alert">
         {state.alert}
       </div>
-      {state.toasts.map((t, idx) => (
-        <Item key={t.id} t={t} i={n - 1 - idx} labels={state.labels} />
+
+      {state.toasts.map((item, index) => (
+        <Item
+          key={item.id}
+          toast={item}
+          index={toastCount - 1 - index}
+          labels={state.labels}
+        />
       ))}
     </div>
   );
