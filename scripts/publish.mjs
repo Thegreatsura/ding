@@ -159,7 +159,6 @@ for (const pkg of packages) {
   }
   const files = execFileSync('tar', ['-tzf', pkg.tarball], { encoding: 'utf8' }).trim().split('\n');
   if (!files.some((file) => file.startsWith('package/dist/'))) fail(`${pkg.name} tarball has no dist directory.`);
-  if (!files.includes('package/skills/ding/SKILL.md')) fail(`${pkg.name} tarball is missing the Ding skill.`);
   ok(`${pkg.name} packaged (${created[0]})`);
 }
 

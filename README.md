@@ -63,8 +63,6 @@ npx skills add YusufCeng1z/ding --skill ding
 
 Add `--global` to use the skill across projects. For manual installation, copy the `ding` skill directory into your agent's project skills directory. In Claude Code, that directory is `.claude/skills/` and the command is `/ding`.
 
-If pnpm 12.11+ lists Ding under skills awaiting approval after install, run `pnpm approve` and select your agent's skills directory if prompted.
-
 For Claude chat, create an uploadable ZIP from a clone of the Ding repository.
 
 ```bash
