@@ -164,7 +164,7 @@ toast.success('Message deleted', {
 | `duration` | Milliseconds before it closes. `0` keeps it until dismissed. Default `5000` |
 | `id` | Reuse an id so repeated calls from one place stay one caller |
 
-Errors, loading toasts and toasts with a button stay until dismissed. Hover and keyboard focus pause the timer. Repeating the same toast adds a counter (×2).
+Errors, loading toasts and toasts with a button stay until dismissed. Hover, keyboard focus and a hidden tab pause the timer. Repeating the same toast adds a counter (×2).
 
 ## Configure
 
