@@ -53,6 +53,10 @@ export function createToaster() {
   const pending: { id: string; type: ToastType; title: string; opts: ToastOptions; holds: boolean }[] = [];
   const live = new Map<string, string>(); // caller id -> toast id
   const owner = new Map<string, string>(); // toast id -> newest caller id
+  // Timers also stop while the tab is hidden, so a toast is never closed unseen. This is kept apart from
+  // `Entry.paused` (hover, focus, toast.pause()): coming back to the tab must not resume a toast they still hold.
+  const doc = typeof document === 'undefined' ? undefined : document;
+  let hidden = !!doc?.hidden;
 
   const emit = () => subs.forEach((fn) => fn());
   const setToasts = (toasts: ToastItem[]) => {
@@ -81,7 +85,7 @@ export function createToaster() {
     if (!e) return;
     clearTimeout(e.lifeTimer);
     e.lifeTimer = undefined;
-    if (find(id)?.phase !== 'open' || e.paused || e.remaining <= 0) return;
+    if (find(id)?.phase !== 'open' || e.paused || hidden || e.remaining <= 0) return;
     e.startedAt = Date.now();
     e.lifeTimer = setTimeout(() => close(id), e.remaining);
   }
@@ -265,16 +269,20 @@ export function createToaster() {
     e.phaseTimer = setTimeout(leave, TIMING.closing);
   }
 
+  /** Stop the running auto-close timer and keep the time left. Exit animations already started keep going. */
+  function stopLife(e: Entry) {
+    if (!e.lifeTimer) return;
+    clearTimeout(e.lifeTimer);
+    e.lifeTimer = undefined;
+    e.remaining = Math.max(0, e.remaining - (Date.now() - e.startedAt));
+  }
+
   function pause(id?: string) {
     if (id === undefined) return [...entries.keys()].forEach(pause);
     const e = entries.get(id);
     if (!e || e.paused) return;
     e.paused = true;
-    if (e.lifeTimer) {
-      clearTimeout(e.lifeTimer);
-      e.lifeTimer = undefined;
-      e.remaining = Math.max(0, e.remaining - (Date.now() - e.startedAt));
-    }
+    stopLife(e);
   }
 
   function resume(id?: string) {
@@ -284,6 +292,13 @@ export function createToaster() {
     e.paused = false;
     startLife(id);
   }
+
+  doc?.addEventListener('visibilitychange', () => {
+    if (hidden === doc.hidden) return;
+    hidden = doc.hidden;
+    if (hidden) entries.forEach(stopLife);
+    else entries.forEach((_, id) => startLife(id));
+  });
 
   function promise<T>(p: Promise<T> | (() => Promise<T>), m: PromiseMessages<T>): Promise<T> {
     const id = show('loading', m.loading);

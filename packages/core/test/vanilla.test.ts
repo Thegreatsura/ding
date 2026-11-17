@@ -308,3 +308,124 @@ describe('mountToaster', () => {
     }).not.toThrow();
   });
 });
+
+describe('tab visibility', () => {
+  const setHidden = (hidden: boolean) => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+    document.dispatchEvent(new Event('visibilitychange'));
+  };
+  const phase = (id: string) => toast.getState().toasts.find((t) => t.id === id)?.phase;
+
+  afterEach(() => setHidden(false));
+
+  it('stops the timer while the tab is hidden and resumes with the time left', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450 + 600);
+    setHidden(true);
+    vi.advanceTimersByTime(10_000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(399);
+    expect(phase(id)).toBe('open');
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('keeps a toast created while the tab is hidden until the user comes back', () => {
+    mount();
+    setHidden(true);
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(10_000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(999);
+    expect(phase(id)).toBe('open');
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('stays paused on return while the pointer is over the toaster', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    viewport().dispatchEvent(new PointerEvent('pointerenter'));
+    setHidden(true);
+    setHidden(false);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    viewport().dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('stays paused on return while a toast has keyboard focus', () => {
+    mount();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    onToastKey(new KeyboardEvent('keydown', { key: 't', altKey: true, cancelable: true }));
+    expect(document.activeElement?.closest('.tst-slot')).not.toBeNull();
+    setHidden(true);
+    setHidden(false);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    outside.focus();
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+    outside.remove();
+  });
+
+  it('stays paused on return after toast.pause()', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    toast.pause(id);
+    setHidden(true);
+    setHidden(false);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    toast.resume(id);
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('toast.resume() while the tab is hidden waits for the tab to come back', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    toast.pause(id);
+    setHidden(true);
+    toast.resume(id);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('holds the countdown bar where it was while the tab is hidden', () => {
+    mount();
+    toast.success('Deleted', { duration: 2200, action: { label: 'Undo', onClick() {} } });
+    vi.advanceTimersByTime(450 + 300);
+    const timer = document.querySelector<HTMLElement>('.tst-timer')!;
+    // happy-dom does not run CSS animations: stand in for the bar's CSSAnimation.
+    const bar = { currentTime: 750 as number | null };
+    timer.getAnimations = () => [bar as unknown as Animation];
+    setHidden(true);
+    bar.currentTime = 750 + 3000; // the browser keeps the bar running in a background tab
+    setHidden(false);
+    expect(bar.currentTime).toBe(750);
+  });
+
+  it('lets a toast that is already leaving finish while the tab is hidden', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450 + 1000);
+    expect(phase(id)).toBe('closing');
+    setHidden(true);
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBeUndefined();
+  });
+});
