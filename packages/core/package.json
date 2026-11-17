@@ -20,9 +20,11 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "skills/ding"
   ],
   "scripts": {
+    "prepack": "node ../../scripts/pack-skill.mjs",
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "test": "node --test \"src/**/*.test.ts\" && vitest run",
     "typecheck": "tsc -p ."

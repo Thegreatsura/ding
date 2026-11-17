@@ -51,6 +51,18 @@ Using shadcn/ui? Ding is in the shadcn registry directory, so one command instal
 npx shadcn@latest add @ding/ding
 ```
 
+### Optional Ding skill
+
+The [Ding skill](.agents/skills/ding/SKILL.md) gives coding agents framework setup and guidance on promises, progress, and toast actions.
+
+If pnpm 12.11+ lists Ding under skills awaiting approval after install, run `pnpm approve` to review it for your project. For Codex, link it into `.agents/skills` if asked to choose a directory.
+
+You can also ask Codex to install it for your user account by pasting this prompt:
+
+```text
+$skill-installer Install the Ding skill from https://github.com/YusufCeng1z/ding/tree/main/.agents/skills/ding
+```
+
 ## Quick start
 
 Render the toaster once, then call `toast` from anywhere.

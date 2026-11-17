@@ -13,9 +13,11 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "skills/ding"
   ],
   "scripts": {
+    "prepack": "node ../../scripts/pack-skill.mjs",
     "build": "svelte-package -i src/lib -o dist",
     "test": "vitest run",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json"

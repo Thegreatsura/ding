@@ -4,3 +4,4 @@ dist
 *.tsbuildinfo
 apps/docs/bug-lab/
 .release/
+/packages/*/skills/ding/

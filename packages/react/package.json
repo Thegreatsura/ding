@@ -19,9 +19,11 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "skills/ding"
   ],
   "scripts": {
+    "prepack": "node ../../scripts/pack-skill.mjs",
     "build": "tsup",
     "test": "vitest run",
     "typecheck": "tsc -p ."
