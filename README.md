@@ -53,15 +53,25 @@ npx shadcn@latest add @ding/ding
 
 ### Optional Ding skill
 
-The [Ding skill](.agents/skills/ding/SKILL.md) gives coding agents framework setup and guidance on promises, progress, and toast actions.
+The [Ding skill](.agents/skills/ding/SKILL.md) gives Claude Code, Codex, Cursor, GitHub Copilot, and other [Agent Skills-compatible tools](https://agentskills.io/) framework setup and guidance on promises, progress, and toast actions.
 
-If pnpm 12.11+ lists Ding under skills awaiting approval after install, run `pnpm approve` to review it for your project. For Codex, link it into `.agents/skills` if asked to choose a directory.
+Run the installer from your app with Node.js 22.20 or newer, then select your coding agent.
 
-You can also ask Codex to install it for your user account by pasting this prompt:
-
-```text
-$skill-installer Install the Ding skill from https://github.com/YusufCeng1z/ding/tree/main/.agents/skills/ding
+```bash
+npx skills add YusufCeng1z/ding --skill ding
 ```
+
+Add `--global` to use the skill across projects. For manual installation, copy the `ding` skill directory into your agent's project skills directory. In Claude Code, that directory is `.claude/skills/` and the command is `/ding`.
+
+If pnpm 12.11+ lists Ding under skills awaiting approval after install, run `pnpm approve` and select your agent's skills directory if prompted.
+
+For Claude chat, create an uploadable ZIP from a clone of the Ding repository.
+
+```bash
+git archive --format=zip --output=ding-skill.zip HEAD:.agents/skills ding
+```
+
+Upload `ding-skill.zip` under **Customize → Skills**. [Claude's upload guide](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
 
 ## Quick start
 
