@@ -7,6 +7,14 @@ const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)
 const retry = { label: 'Retry', onClick: () => undefined };
 const fix = { label: 'Fix', onClick: () => undefined };
 
+$('#tab-demo').addEventListener('click', () => {
+  toast.dismiss(undefined, { immediate: true });
+  toast.success('Message deleted', {
+    duration: 5000,
+    action: { label: 'Undo', onClick: () => ({ title: 'Message restored', duration: 2500 }) },
+  });
+});
+
 let oldId = '';
 let currentId = '';
 let physicalId = '';

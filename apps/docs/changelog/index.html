@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ding 0.0.7: safer toast IDs and actions</title>
-    <meta name="description" content="Ding 0.0.7 protects newer toasts from stale IDs, fixes async actions, drag cancellation and animation cleanup across React, Svelte, Vue and plain JS." />
+    <title>Ding 0.0.8: countdowns pause in background tabs</title>
+    <meta name="description" content="Ding 0.0.8 pauses timed toasts in background tabs, keeps the countdown bar in sync, and adds an optional skill for coding agents." />
     <link rel="canonical" href="https://ding.yusufcengiz.dev/changelog/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -13,23 +13,22 @@
     <link rel="stylesheet" href="/changelog.css" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="Ding" />
-    <meta property="og:title" content="What's new in Ding 0.0.7" />
-    <meta property="og:description" content="Safer toast IDs, async actions, drag cancellation and multi-toaster layout." />
+    <meta property="og:title" content="What's new in Ding 0.0.8" />
+    <meta property="og:description" content="Countdowns pause in background tabs. An optional skill helps coding agents integrate Ding." />
     <meta property="og:url" content="https://ding.yusufcengiz.dev/changelog/" />
     <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ding 0.0.7: safer toast IDs and actions" />
-    <meta name="twitter:description" content="Safer toast IDs, async actions, drag cancellation and multi-toaster layout." />
+    <meta name="twitter:title" content="Ding 0.0.8: countdowns pause in background tabs" />
+    <meta name="twitter:description" content="Countdowns pause in background tabs. An optional skill helps coding agents integrate Ding." />
     <meta name="twitter:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "TechArticle",
-        "headline": "What's new in Ding 0.0.7",
-        "description": "Safer toast IDs, async actions, drag cancellation and multi-toaster layout.",
+        "headline": "What's new in Ding 0.0.8",
+        "description": "Countdowns pause in background tabs. An optional skill helps coding agents integrate Ding.",
         "url": "https://ding.yusufcengiz.dev/changelog/",
-        "datePublished": "2026-11-16",
-        "dateModified": "2026-11-16",
+        "dateModified": "2026-11-18",
         "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
         "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
       }
@@ -46,10 +45,37 @@
       <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
     </nav>
     <main>
-      <h1>What's new in Ding 0.0.7</h1>
-      <p class="version">Safer caller IDs, more predictable actions and steadier motion.</p>
-      <p class="lead">A late operation should not close a newer message. This release also fixes async Undo, cancelled drags, animation cleanup and two-toaster layout across the built-in renderers.</p>
-      <pre><code>npm i @yusufceng1z/ding@0.0.7</code></pre>
+      <h1>What's new in Ding 0.0.8</h1>
+      <p class="lead">Timed toasts keep their remaining time when you switch tabs. The countdown bar and the toast close timer stay in sync.</p>
+      <pre><code>npm i @yusufceng1z/ding@0.0.8</code></pre>
+
+      <section class="entry" aria-labelledby="countdown-008">
+        <h2 id="countdown-008">Countdowns pause in background tabs</h2>
+        <p>A timed toast shown in the background starts its countdown when you return. If the countdown was already running, it resumes with the time left. This applies to React, Svelte, Vue and plain DOM.</p>
+        <div class="demo" role="group" aria-label="Countdown demo">
+          <p>Show the Undo toast, switch to another tab while the line is shrinking, then come back. The line picks up where it left off.</p>
+          <div class="row">
+            <button type="button" id="tab-demo">Show timed Undo</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="entry" aria-labelledby="agent-skill-008">
+        <h2 id="agent-skill-008">Optional Ding skill for coding agents</h2>
+        <p>The skill covers setup, promises, progress, actions and styling. With Node.js 22.20 or later, run:</p>
+        <pre><code>npx skills add YusufCeng1z/ding --skill ding</code></pre>
+        <p>See the <a href="https://github.com/YusufCeng1z/ding#optional-ding-skill">manual install and ZIP instructions</a>.</p>
+      </section>
+
+      <section class="entry" aria-labelledby="react-008">
+        <h2 id="react-008">React renderer cleanup</h2>
+        <p>The React renderer is easier to maintain. The existing <a href="/nextjs-toast/">Next.js setup</a> still mounts <code>Toaster</code> directly in the root layout.</p>
+      </section>
+
+      <section class="entry" aria-labelledby="release-007">
+        <h2 id="release-007">Ding 0.0.7 — safer toast IDs and actions</h2>
+        <p>A late operation should not close a newer message. This release also fixes async Undo, cancelled drags, animation cleanup and two-toaster layout across the built-in renderers.</p>
+      </section>
 
       <section class="entry" aria-labelledby="id-safety">
         <h2 id="id-safety">Old IDs leave newer messages alone <span class="tag">Fixed</span></h2>
@@ -128,7 +154,7 @@
 
       <section class="entry" aria-labelledby="dev">
         <h2 id="dev">Older releases</h2>
-        <p><a href="#release-006">What's new in 0.0.6</a> · <a href="/changelog/0-0-5/">What's new in 0.0.5</a> · <a href="/changelog/0-0-4/">What's new in 0.0.4</a> · <a href="/changelog/0-0-3/">What's new in 0.0.3</a></p>
+        <p><a href="#release-007">What's new in 0.0.7</a> · <a href="#release-006">What's new in 0.0.6</a> · <a href="/changelog/0-0-5/">What's new in 0.0.5</a> · <a href="/changelog/0-0-4/">What's new in 0.0.4</a> · <a href="/changelog/0-0-3/">What's new in 0.0.3</a></p>
       </section>
 
       <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>
