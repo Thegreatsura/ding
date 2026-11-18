@@ -23,12 +23,18 @@ interface Entry {
   phaseTimer?: ReturnType<typeof setTimeout>;
   lifeTimer?: ReturnType<typeof setTimeout>;
   startedAt: number;
-  /** ms left before auto-close; 0 = sticky */
+  /** ms left before auto-close */
   remaining: number;
-  /** full duration, restored when the toast is bumped */
+  /** full duration, restored when the toast is bumped; 0 = sticky */
   base: number;
   paused: boolean;
+  countdownSubs?: Set<() => void>;
 }
+
+export const countdown = Symbol();
+
+const remainingLife = (e: Entry) =>
+  e.lifeTimer === undefined ? e.remaining : Math.max(0, e.remaining - (Date.now() - e.startedAt));
 
 const DEFAULT_LABELS: ToastLabels = { region: 'Notifications', dismiss: 'Dismiss notification' };
 
@@ -85,9 +91,11 @@ export function createToaster() {
     if (!e) return;
     clearTimeout(e.lifeTimer);
     e.lifeTimer = undefined;
-    if (find(id)?.phase !== 'open' || e.paused || hidden || e.remaining <= 0) return;
-    e.startedAt = Date.now();
-    e.lifeTimer = setTimeout(() => close(id), e.remaining);
+    if (find(id)?.phase === 'open' && !e.paused && !hidden && e.base > 0) {
+      e.startedAt = Date.now();
+      e.lifeTimer = setTimeout(() => close(id), e.remaining);
+    }
+    e.countdownSubs?.forEach((fn) => fn());
   }
 
   function show(type: ToastType, title: string, opts: ToastOptions = {}): string {
@@ -204,7 +212,10 @@ export function createToaster() {
       const n = find(id)!;
       e.remaining = autoDuration(n.type, !!(n.action || n.secondary));
     }
-    if (p.duration !== undefined || p.type !== undefined || p.action !== undefined || p.secondary !== undefined) (e.base = e.remaining, patch(id, { duration: e.remaining }));
+    if (p.duration !== undefined || p.type !== undefined || p.action !== undefined || p.secondary !== undefined) {
+      e.base = e.remaining;
+      patch(id, { duration: e.remaining });
+    }
     startLife(id);
     // Progress ticks stay silent, but a completed progress bar with new copy is a result worth announcing.
     const quiet = p.progress !== undefined && p.type === undefined &&
@@ -253,7 +264,7 @@ export function createToaster() {
     const e = entries.get(id);
     if (!t || !e || t.phase === 'exit' || (t.phase === 'closing' && !opts.immediate)) return;
     clearTimeout(e.phaseTimer);
-    clearTimeout(e.lifeTimer);
+    stopLife(e);
     const leave = () => {
       patch(id, { phase: 'exit' });
       e.phaseTimer = setTimeout(() => {
@@ -271,10 +282,11 @@ export function createToaster() {
 
   /** Stop the running auto-close timer and keep the time left. Exit animations already started keep going. */
   function stopLife(e: Entry) {
-    if (!e.lifeTimer) return;
+    if (e.lifeTimer === undefined) return;
+    e.remaining = remainingLife(e);
     clearTimeout(e.lifeTimer);
     e.lifeTimer = undefined;
-    e.remaining = Math.max(0, e.remaining - (Date.now() - e.startedAt));
+    e.countdownSubs?.forEach((fn) => fn());
   }
 
   function pause(id?: string) {
@@ -316,6 +328,17 @@ export function createToaster() {
   }
 
   return {
+    [countdown](id: string, onChange: () => void) {
+      const e = entries.get(id);
+      if (!e) return;
+      const listeners = e.countdownSubs ??= new Set();
+      listeners.add(onChange);
+      return {
+        remaining: () => e.base > 0 ? Math.min(1, remainingLife(e) / e.base) : 1,
+        running: () => e.lifeTimer !== undefined,
+        unsubscribe: () => listeners.delete(onChange),
+      };
+    },
     show,
     success: (title: string, o?: ToastOptions) => show('success', title, o),
     error: (title: string, o?: ToastOptions) => show('error', title, o),

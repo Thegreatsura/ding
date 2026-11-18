@@ -345,6 +345,19 @@ describe('tab visibility', () => {
     expect(phase(id)).toBe('closing');
   });
 
+  it('closes an expired toast if the tab hides before its timer callback runs', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    vi.setSystemTime(Date.now() + 1000);
+    setHidden(true);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
   it('stays paused on return while the pointer is over the toaster', () => {
     mount();
     const id = toast.success('Saved', { duration: 1000 });
@@ -405,18 +418,54 @@ describe('tab visibility', () => {
     expect(phase(id)).toBe('closing');
   });
 
-  it('holds the countdown bar where it was while the tab is hidden', () => {
+  const barFraction = () =>
+    Number(viewport().querySelector<HTMLElement>('.tst-slot')!.style.getPropertyValue('--tst-time-left'));
+
+  it('draws the countdown from the remaining lifetime before and after switching tabs', () => {
     mount();
-    toast.success('Deleted', { duration: 2200, action: { label: 'Undo', onClick() {} } });
-    vi.advanceTimersByTime(450 + 300);
-    const timer = document.querySelector<HTMLElement>('.tst-timer')!;
-    // happy-dom does not run CSS animations: stand in for the bar's CSSAnimation.
-    const bar = { currentTime: 750 as number | null };
-    timer.getAnimations = () => [bar as unknown as Animation];
+    const options = { duration: 1000, action: { label: 'Undo', onClick() {} } };
+    const id = toast.success('Deleted', options);
+    expect(barFraction()).toBe(1);
+    vi.advanceTimersByTime(450 + 600);
     setHidden(true);
-    bar.currentTime = 750 + 3000; // the browser keeps the bar running in a background tab
+    expect(barFraction()).toBeCloseTo(0.4);
+    vi.advanceTimersByTime(10_000);
+    expect(barFraction()).toBeCloseTo(0.4);
     setHidden(false);
-    expect(bar.currentTime).toBe(750);
+    expect(barFraction()).toBeCloseTo(0.4);
+    vi.advanceTimersByTime(200);
+    expect(barFraction()).toBeCloseTo(0.2, 1);
+    vi.advanceTimersByTime(200);
+    expect(phase(id)).toBe('closing');
+    expect(barFraction()).toBe(0);
+  });
+
+  it('restarts the countdown bar when an open toast gets the same duration again', () => {
+    mount();
+    const options = { duration: 2000, action: { label: 'Undo', onClick() {} } };
+    const id = toast.success('Deleted', options);
+    vi.advanceTimersByTime(450 + 1500);
+    expect(barFraction()).toBeCloseTo(0.25, 1);
+    toast.success('Deleted again', options);
+    expect(barFraction()).toBe(1);
+    vi.advanceTimersByTime(1999);
+    expect(phase(id)).toBe('open');
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('draws a full bar for a toast created or retimed in a hidden tab', () => {
+    mount();
+    setHidden(true);
+    const id = toast.success('Deleted', { duration: 2200, action: { label: 'Undo', onClick() {} } });
+    vi.advanceTimersByTime(1000);
+    expect(barFraction()).toBe(1);
+    toast.update(id, { duration: 3000 });
+    vi.advanceTimersByTime(10_000);
+    expect(barFraction()).toBe(1);
+    setHidden(false);
+    vi.advanceTimersByTime(1500);
+    expect(barFraction()).toBeCloseTo(0.5, 1);
   });
 
   it('lets a toast that is already leaving finish while the tab is hidden', () => {

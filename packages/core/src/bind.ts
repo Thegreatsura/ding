@@ -1,4 +1,4 @@
-import { toast, type Toaster } from './store';
+import { countdown, toast, type Toaster } from './store';
 import { Spring, run, stop } from './motion';
 import { getSpringConfigs, getSprings } from './styles';
 
@@ -340,30 +340,32 @@ function watchDrag(slot: HTMLElement, id: string, t: Toaster): () => void {
   };
 }
 
-/**
- * The countdown bar is a CSS animation, and browsers keep running it in a background tab while the store
- * holds the auto-close timer. Note where the bar was when the tab is hidden and put it back on return,
- * so it still shows the time left. Setting currentTime keeps the hover/focus `animation-play-state` rules working.
- */
-function watchTimerBar(slot: HTMLElement) {
-  let held: { anim: Animation; at: CSSNumberish | null } | undefined;
-  const onVisibility = () => {
-    if (document.hidden) {
-      const anim = slot.querySelector('.tst-timer')?.getAnimations()[0];
-      held = anim && { anim, at: anim.currentTime };
-    } else if (held) {
-      if (held.at !== null && slot.querySelector('.tst-timer')?.getAnimations()[0] === held.anim) held.anim.currentTime = held.at;
-      held = undefined;
-    }
+function watchTimerBar(slot: HTMLElement, id: string, t: Toaster) {
+  const clock = t[countdown](id, sync);
+  if (!clock) return () => {};
+
+  const draw = () => {
+    const remaining = clock.remaining();
+    slot.style.setProperty('--tst-time-left', String(remaining));
+    return clock.running() && remaining > 0;
   };
-  document.addEventListener('visibilitychange', onVisibility);
-  return () => document.removeEventListener('visibilitychange', onVisibility);
+  function sync() {
+    const item = t.getState().toasts.find((item) => item.id === id);
+    if ((item?.action || item?.secondary) && item.duration > 0 && draw() && !reduced()) run(draw);
+    else stop(draw);
+  }
+  sync();
+  return () => {
+    clock.unsubscribe();
+    stop(draw);
+    slot.style.removeProperty('--tst-time-left');
+  };
 }
 
 /** Adapter hook-up: call with the `.tst-slot` element (its first child is the pill). Returns cleanup. */
 export function bindToast(slot: HTMLElement, id: string, t: Toaster = toast): () => void {
   const stopDrag = watchDrag(slot, id, t);
   const stopMotion = watchMotion(slot, id, t);
-  const stopTimerBar = watchTimerBar(slot);
+  const stopTimerBar = watchTimerBar(slot, id, t);
   return () => (stopDrag(), stopMotion(), stopTimerBar());
 }

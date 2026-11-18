@@ -135,7 +135,6 @@ export function mountToaster(
       card.className = t.className ? `tst ${t.className}` : 'tst';
       card.dataset.phase = t.phase;
       card.dataset.type = t.type;
-      card.style.setProperty('--tst-life', `${t.duration}ms`);
       // icon: rebuilt only when the type or image changes, so its draw-in replays exactly then
       const iconKey = t.image ?? t.type;
       if (n.type !== iconKey) {
@@ -148,10 +147,8 @@ export function mountToaster(
       }
       const timed = (t.action || t.secondary) && t.duration > 0;
       const timer = card.querySelector<HTMLElement>('.tst-timer');
-      if (!timed || timer?.dataset.k !== String(t.duration)) {
-        timer?.remove();
-        if (timed) el('div', 'tst-timer', card).dataset.k = String(t.duration);
-      }
+      if (!timed) timer?.remove();
+      else if (!timer) el('div', 'tst-timer', card);
       let bar = card.querySelector<HTMLElement>('.tst-progress');
       if (t.progress === undefined) bar?.remove();
       else (bar ??= card.insertBefore(el('div', 'tst-progress'), card.firstChild)).style.setProperty('--pg', String(t.progress));

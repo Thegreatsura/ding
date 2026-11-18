@@ -45,10 +45,6 @@ function Item({ toast: item, index, labels }: ItemProps) {
     '--tst-i': index,
   } as CSSProperties;
 
-  const toastStyle = {
-    '--tst-life': `${item.duration}ms`,
-  } as CSSProperties;
-
   const progressStyle = {
     '--pg': item.progress,
   } as CSSProperties;
@@ -71,10 +67,9 @@ function Item({ toast: item, index, labels }: ItemProps) {
         className={item.className ? `tst ${item.className}` : 'tst'}
         data-phase={item.phase}
         data-type={item.type}
-        style={toastStyle}
       >
         {(item.action || item.secondary) && item.duration > 0 && (
-          <div className="tst-timer" key={item.duration} />
+          <div className="tst-timer" />
         )}
 
         {item.progress !== undefined && (
