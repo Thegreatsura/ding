@@ -117,7 +117,7 @@
         );
       }</code></pre>
       <h2 id="configure-sound-and-other-options">Configure sound and other options</h2>
-      <p><code>toast.configure</code> is client code too. It cannot run in <code>layout.tsx</code>, and it should not run while a component renders. Put it in an effect inside a small client component that also renders the Toaster:</p>
+      <p><code>toast.configure</code> runs in the browser. To set options such as sound, use an effect in a client component that also renders the Toaster:</p>
       <pre><code>"use client";
 
       import { useEffect } from 'react';
@@ -150,7 +150,7 @@
       <p>Ding follows the system theme by default. If your site has its own theme switch, such as a <code>.dark</code> class, pass the current theme to the toaster:</p>
       <pre><code>&lt;Toaster theme={theme} position="top-center" /&gt;</code></pre>
       <p>Colors and corner radius are CSS variables, so a global stylesheet is enough to match your design:</p>
-      <pre><code>.tst-viewport {
+      <pre><code>:root .tst-viewport {
   --tst-radius: 8px;
   --tst-bg: #1e3a8a;
   --tst-fg: #fff;
@@ -166,7 +166,7 @@
       <h3>Does it work with a theme switcher?</h3>
       <p>Yes. Pass the current theme to <code>Toaster</code> or call <code>toast.configure({ theme })</code>.</p>
       <h3>Where do I call toast.configure?</h3>
-      <p>In an effect inside a client component, not in <code>layout.tsx</code> and not in a component body. A server component gets <code>toast.configure is not a function</code>, and calling it during render gives a React warning about updating <code>Toaster</code> while rendering. See <a href="#configure-sound-and-other-options">the example above</a>.</p>
+      <p>In an effect inside a client component. The layout can stay a server component. See <a href="#configure-sound-and-other-options">the example above</a>.</p>
       <h3>Is there a shadcn/ui version?</h3>
       <p>Yes. <code>npx shadcn@latest add @ding/ding</code> installs the React package and adds a <code>ding-toaster.tsx</code> wrapper. See the <a href="/shadcn-toast/">shadcn/ui toast guide</a>.</p>
       <h2>Related guides</h2>

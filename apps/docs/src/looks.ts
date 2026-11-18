@@ -52,7 +52,7 @@ export function lookCss(l: Look): string {
   if (l.size !== DEFAULT.size) vars.push(`--tst-size: ${l.size}px;`, '--tst-pad: 24px;', 'font-size: 16px;');
   for (const [k] of COLORS) if (l.colors[k]) vars.push(`--tst-${k}: ${l.colors[k]};`);
   const out: string[] = [];
-  if (vars.length) out.push(`.tst-viewport {\n  ${vars.join('\n  ')}\n}`);
+  if (vars.length) out.push(`:root .tst-viewport {\n  ${vars.join('\n  ')}\n}`);
   if (l.filled) {
     for (const t of ['success', 'error', 'warning', 'info', 'loading'] as const) {
       out.push(`.tst-viewport .tst[data-type=${t}] { --fill: ${(t !== 'loading' && l.colors[t]) || FILL[t]}; --on: ${l.colors.on ?? '#fff'}; --c: ${l.colors.on ?? '#fff'}; }`);

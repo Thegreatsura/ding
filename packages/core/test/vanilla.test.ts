@@ -308,3 +308,173 @@ describe('mountToaster', () => {
     }).not.toThrow();
   });
 });
+
+describe('tab visibility', () => {
+  const setHidden = (hidden: boolean) => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+    document.dispatchEvent(new Event('visibilitychange'));
+  };
+  const phase = (id: string) => toast.getState().toasts.find((t) => t.id === id)?.phase;
+
+  afterEach(() => setHidden(false));
+
+  it('stops the timer while the tab is hidden and resumes with the time left', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450 + 600);
+    setHidden(true);
+    vi.advanceTimersByTime(10_000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(399);
+    expect(phase(id)).toBe('open');
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('keeps a toast created while the tab is hidden until the user comes back', () => {
+    mount();
+    setHidden(true);
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(10_000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(999);
+    expect(phase(id)).toBe('open');
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('closes an expired toast if the tab hides before its timer callback runs', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    vi.setSystemTime(Date.now() + 1000);
+    setHidden(true);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('stays paused on return while the pointer is over the toaster', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    viewport().dispatchEvent(new PointerEvent('pointerenter'));
+    setHidden(true);
+    setHidden(false);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    viewport().dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('stays paused on return while a toast has keyboard focus', () => {
+    mount();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    onToastKey(new KeyboardEvent('keydown', { key: 't', altKey: true, cancelable: true }));
+    expect(document.activeElement?.closest('.tst-slot')).not.toBeNull();
+    setHidden(true);
+    setHidden(false);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    outside.focus();
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+    outside.remove();
+  });
+
+  it('stays paused on return after toast.pause()', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    toast.pause(id);
+    setHidden(true);
+    setHidden(false);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    toast.resume(id);
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('toast.resume() while the tab is hidden waits for the tab to come back', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450);
+    toast.pause(id);
+    setHidden(true);
+    toast.resume(id);
+    vi.advanceTimersByTime(5000);
+    expect(phase(id)).toBe('open');
+    setHidden(false);
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBe('closing');
+  });
+
+  const barFraction = () =>
+    Number(viewport().querySelector<HTMLElement>('.tst-slot')!.style.getPropertyValue('--tst-time-left'));
+
+  it('draws the countdown from the remaining lifetime before and after switching tabs', () => {
+    mount();
+    const options = { duration: 1000, action: { label: 'Undo', onClick() {} } };
+    const id = toast.success('Deleted', options);
+    expect(barFraction()).toBe(1);
+    vi.advanceTimersByTime(450 + 600);
+    setHidden(true);
+    expect(barFraction()).toBeCloseTo(0.4);
+    vi.advanceTimersByTime(10_000);
+    expect(barFraction()).toBeCloseTo(0.4);
+    setHidden(false);
+    expect(barFraction()).toBeCloseTo(0.4);
+    vi.advanceTimersByTime(200);
+    expect(barFraction()).toBeCloseTo(0.2, 1);
+    vi.advanceTimersByTime(200);
+    expect(phase(id)).toBe('closing');
+    expect(barFraction()).toBe(0);
+  });
+
+  it('restarts the countdown bar when an open toast gets the same duration again', () => {
+    mount();
+    const options = { duration: 2000, action: { label: 'Undo', onClick() {} } };
+    const id = toast.success('Deleted', options);
+    vi.advanceTimersByTime(450 + 1500);
+    expect(barFraction()).toBeCloseTo(0.25, 1);
+    toast.success('Deleted again', options);
+    expect(barFraction()).toBe(1);
+    vi.advanceTimersByTime(1999);
+    expect(phase(id)).toBe('open');
+    vi.advanceTimersByTime(1);
+    expect(phase(id)).toBe('closing');
+  });
+
+  it('draws a full bar for a toast created or retimed in a hidden tab', () => {
+    mount();
+    setHidden(true);
+    const id = toast.success('Deleted', { duration: 2200, action: { label: 'Undo', onClick() {} } });
+    vi.advanceTimersByTime(1000);
+    expect(barFraction()).toBe(1);
+    toast.update(id, { duration: 3000 });
+    vi.advanceTimersByTime(10_000);
+    expect(barFraction()).toBe(1);
+    setHidden(false);
+    vi.advanceTimersByTime(1500);
+    expect(barFraction()).toBeCloseTo(0.5, 1);
+  });
+
+  it('lets a toast that is already leaving finish while the tab is hidden', () => {
+    mount();
+    const id = toast.success('Saved', { duration: 1000 });
+    vi.advanceTimersByTime(450 + 1000);
+    expect(phase(id)).toBe('closing');
+    setHidden(true);
+    vi.advanceTimersByTime(1000);
+    expect(phase(id)).toBeUndefined();
+  });
+});

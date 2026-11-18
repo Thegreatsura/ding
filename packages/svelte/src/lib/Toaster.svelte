@@ -53,9 +53,8 @@
         class={t.className ? `tst ${t.className}` : 'tst'}
         data-phase={t.phase}
         data-type={t.type}
-        style:--tst-life="{t.duration}ms"
       >
-        {#if (t.action || t.secondary) && t.duration > 0}{#key t.duration}<div class="tst-timer"></div>{/key}{/if}
+        {#if (t.action || t.secondary) && t.duration > 0}<div class="tst-timer"></div>{/if}
         {#if t.progress !== undefined}<div class="tst-progress" style:--pg={t.progress}></div>{/if}
         <div class="tst-icon">
           {#if t.image}

@@ -134,7 +134,7 @@
       <h2>Next.js and shadcn/ui</h2>
       <p>The package is marked <code>"use client"</code>, so in the Next.js App Router <code>Toaster</code> can go straight into a server layout. The <a href="/nextjs-toast/">Next.js setup</a> shows how. If the project uses shadcn/ui, there is also a <a href="/shadcn-toast/">one-command install</a>.</p>
       <h2>Timing</h2>
-      <p>Plain toasts close after 5 seconds. Errors, loading toasts and toasts with a button stay until the user dismisses them, because those are the ones people must not miss. Hovering or focusing a toast pauses the timer.</p>
+      <p>Plain toasts close after 5 seconds. Errors, loading toasts and toasts with a button stay until the user dismisses them, because those are the ones people must not miss. Hover, keyboard focus and a hidden tab pause the countdown.</p>
       <p>I wrote Ding because I wanted a toast that does not pile up. If that sounds like what you need, a star on <a href="https://github.com/YusufCeng1z/ding">GitHub</a> helps others find it.</p>
       <h2>Position, theme and sound</h2>
       <p>The toaster takes its settings as props, and the same settings work from anywhere with <code>toast.configure</code>:</p>
@@ -144,7 +144,7 @@ toast.configure({ sound: true, volume: 0.5 });</code></pre>
       <p>There are six positions (top and bottom, each left, center or right) and three themes: <code>system</code>, <code>light</code> and <code>dark</code>. The toaster mirrors itself on right-to-left pages.</p>
       <h2>Restyle it with CSS variables</h2>
       <p>Colors and corner radius are CSS variables, so you can match your design system without touching the library:</p>
-      <pre><code>.tst-viewport {
+      <pre><code>:root .tst-viewport {
   --tst-radius: 8px;
   --tst-bg: #1e3a8a;
   --tst-fg: #fff;

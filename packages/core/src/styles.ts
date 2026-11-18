@@ -105,8 +105,7 @@ opacity:calc(var(--tp)*1.5 - .25);filter:blur(calc((1 - var(--tp))*10px));transf
 .tst-title{font-weight:550;font-variant-numeric:tabular-nums}
 .tst-count,.tst-meta{margin-inline-start:6px;opacity:.7}
 .tst-meta{font-weight:450;font-size:12px}
-.tst-timer{position:absolute;inset:auto 0 0 0;height:2px;background:var(--c);opacity:.45;transform-origin:left;animation:tst-timer var(--tst-life) linear forwards;pointer-events:none}
-.tst-viewport:hover .tst-timer,.tst-viewport:has(:focus-visible) .tst-timer,.tst-viewport:has(.tst-slot[data-shortcut-focus]:focus-within) .tst-timer{animation-play-state:paused}
+.tst-timer{position:absolute;inset:auto 0 0 0;height:2px;background:var(--c);opacity:.45;transform-origin:left;transform:scaleX(var(--tst-time-left,1));pointer-events:none}
 .tst-viewport:dir(rtl) .tst-timer{transform-origin:right}
 .tst-ghost{position:absolute;inset-inline-start:0;top:0;pointer-events:none}
 .tst-progress{position:absolute;inset:auto 0 0 0;height:3px;background:color-mix(in srgb,var(--on) 14%,transparent);opacity:var(--tp);pointer-events:none}
@@ -132,7 +131,6 @@ transition-property:background-color,scale;transition-duration:.15s;transition-t
 
 @keyframes tst-out{to{transform:translateY(calc(var(--tst-dir)*12px)) scale(.92);opacity:0;filter:blur(4px)}}
 @keyframes tst-swap{from{opacity:0;scale:.25;filter:blur(4px)}}
-@keyframes tst-timer{to{transform:scaleX(0)}}
 @keyframes tst-in-btn{from{opacity:0;translate:0 8px;filter:blur(4px)}}
 @keyframes tst-in-up{from{opacity:0;transform:translateY(12px);filter:blur(4px)}}
 @keyframes tst-draw{to{stroke-dashoffset:0}}

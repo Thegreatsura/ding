@@ -1,4 +1,4 @@
-import { toast, type Toaster } from './store';
+import { countdown, toast, type Toaster } from './store';
 import { Spring, run, stop } from './motion';
 import { getSpringConfigs, getSprings } from './styles';
 
@@ -340,9 +340,32 @@ function watchDrag(slot: HTMLElement, id: string, t: Toaster): () => void {
   };
 }
 
+function watchTimerBar(slot: HTMLElement, id: string, t: Toaster) {
+  const clock = t[countdown](id, sync);
+  if (!clock) return () => {};
+
+  const draw = () => {
+    const remaining = clock.remaining();
+    slot.style.setProperty('--tst-time-left', String(remaining));
+    return clock.running() && remaining > 0;
+  };
+  function sync() {
+    const item = t.getState().toasts.find((item) => item.id === id);
+    if ((item?.action || item?.secondary) && item.duration > 0 && draw() && !reduced()) run(draw);
+    else stop(draw);
+  }
+  sync();
+  return () => {
+    clock.unsubscribe();
+    stop(draw);
+    slot.style.removeProperty('--tst-time-left');
+  };
+}
+
 /** Adapter hook-up: call with the `.tst-slot` element (its first child is the pill). Returns cleanup. */
 export function bindToast(slot: HTMLElement, id: string, t: Toaster = toast): () => void {
   const stopDrag = watchDrag(slot, id, t);
   const stopMotion = watchMotion(slot, id, t);
-  return () => (stopDrag(), stopMotion());
+  const stopTimerBar = watchTimerBar(slot, id, t);
+  return () => (stopDrag(), stopMotion(), stopTimerBar());
 }

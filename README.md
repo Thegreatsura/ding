@@ -51,6 +51,26 @@ Using shadcn/ui? Ding is in the shadcn registry directory, so one command instal
 npx shadcn@latest add @ding/ding
 ```
 
+### Optional Ding skill
+
+The [Ding skill](.agents/skills/ding/SKILL.md) gives Claude Code, Codex, Cursor, GitHub Copilot, and other [Agent Skills-compatible tools](https://agentskills.io/) framework setup and guidance on promises, progress, and toast actions.
+
+Run the installer from your app with Node.js 22.20 or newer, then select your coding agent.
+
+```bash
+npx skills add YusufCeng1z/ding --skill ding
+```
+
+Add `--global` to use the skill across projects. For manual installation, copy the `ding` skill directory into your agent's project skills directory. In Claude Code, that directory is `.claude/skills/` and the command is `/ding`.
+
+For Claude chat, create an uploadable ZIP from a clone of the Ding repository.
+
+```bash
+git archive --format=zip --output=ding-skill.zip HEAD:.agents/skills ding
+```
+
+Upload `ding-skill.zip` under **Customize → Skills**. [Claude's upload guide](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
+
 ## Quick start
 
 Render the toaster once, then call `toast` from anywhere.
@@ -164,7 +184,7 @@ toast.success('Message deleted', {
 | `duration` | Milliseconds before it closes. `0` keeps it until dismissed. Default `5000` |
 | `id` | Reuse an id so repeated calls from one place stay one caller |
 
-Errors, loading toasts and toasts with a button stay until dismissed. Hover and keyboard focus pause the timer. Repeating the same toast adds a counter (×2).
+By default, errors, loading toasts and toasts with a button stay until dismissed. Hover, keyboard focus and a hidden tab pause the countdown on timed toasts. Repeating the same toast adds a counter (×2).
 
 ## Configure
 
@@ -203,7 +223,7 @@ Set it with `toast.configure`, or pass `held` to `mountToaster` in plain DOM.
 Colors and corner radius are CSS variables. Set them in your own stylesheet and they apply to every toast, in any framework:
 
 ```css
-.tst-viewport {
+:root .tst-viewport {
   --tst-radius: 8px;
   --tst-bg: #1e3a8a;
   --tst-fg: #fff;
