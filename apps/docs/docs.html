@@ -105,6 +105,8 @@
             <pre data-for="svelte"><code>npm i @yusufceng1z/ding-svelte</code></pre>
             <pre data-for="vue"><code>npm i @yusufceng1z/ding-vue</code></pre>
             <pre data-for="vanilla"><code>npm i @yusufceng1z/ding</code></pre>
+            <p>Using a coding agent? Install the <a href="https://github.com/YusufCeng1z/ding#optional-ding-skill">optional Ding skill</a> with Node.js 22.20 or later.</p>
+            <pre><code>npx skills add YusufCeng1z/ding --skill ding</code></pre>
           </section>
 
           <section id="setup">
@@ -226,7 +228,7 @@ toast.update(id, { type: 'success', title: 'Photo uploaded', progress: null });<
               <dt><code>duration</code></dt><dd>Milliseconds before it closes. <code>0</code> keeps it until dismissed. Default 5000.</dd>
               <dt><code>id</code></dt><dd>Reuse an id so repeated calls from one place stay one caller.</dd>
             </dl>
-            <p>Errors, loading toasts and toasts with a button stay until dismissed, so nobody misses something they need to act on. Hover and keyboard focus pause the timer.</p>
+            <p>By default, errors, loading toasts and toasts with a button stay until dismissed. Hover, keyboard focus and a hidden tab pause the countdown. When you return, it continues with the time left.</p>
           </section>
 
           <section id="configure">
@@ -268,7 +270,7 @@ toast.close(item.id);  // close a visible item in a custom renderer</code></pre>
             <h2>Styling</h2>
             <p><a href="/playground/">Open the playground</a> to try these styles on a live toast and copy the CSS.</p>
             <p>Colors and corner radius are CSS variables. Set them in your own stylesheet and they apply to every toast, whatever framework you use.</p>
-            <pre><code>.tst-viewport {
+            <pre><code>:root .tst-viewport {
   --tst-radius: 8px;
   --tst-bg: #1e3a8a;
   --tst-fg: #fff;

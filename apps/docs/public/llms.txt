@@ -9,6 +9,7 @@
 - Vue 3 / Nuxt: `npm i @yusufceng1z/ding-vue`
 - Vanilla: `npm i @yusufceng1z/ding`
 - shadcn/ui (React): `npx shadcn@latest add @ding/ding`
+- Optional coding-agent skill (Node.js 22.20+): `npx skills add YusufCeng1z/ding --skill ding`. [Manual install and ZIP instructions](https://github.com/YusufCeng1z/ding#optional-ding-skill).
 
 ## Setup
 
@@ -40,7 +41,7 @@ Positions: top-left, top-center, top-right, bottom-left, bottom-center, bottom-r
 
 ## Styling
 
-Colors and corner radius are CSS variables. Set them in your own stylesheet on `.tst-viewport`: `--tst-radius` (default 22px), `--tst-bg`, `--tst-fg`, `--tst-success`, `--tst-error`, `--tst-warning`, `--tst-info`. The color defaults use `light-dark()`, so a single value applies to both themes. Example: `.tst-viewport { --tst-radius: 8px; --tst-bg: #1e3a8a; --tst-fg: #fff; }`
+Colors and corner radius are CSS variables. Set them in your own stylesheet on `:root .tst-viewport`: `--tst-radius` (default 22px), `--tst-bg`, `--tst-fg`, `--tst-success`, `--tst-error`, `--tst-warning`, `--tst-info`. The color defaults use `light-dark()`, so a single value applies to both themes. Example: `:root .tst-viewport { --tst-radius: 8px; --tst-bg: #1e3a8a; --tst-fg: #fff; }`
 
 Advanced: `--tst-size` (44px), `--tst-pad` (16px), `--tst-shadow`, `--tst-enter-scale`; font is set on `.tst-viewport`. Filled toast: override `--fill`, `--on`, `--c` on `.tst-viewport .tst[data-type=error]`. Theme: follows the system; pass `theme` to Toaster or `toast.configure({ theme })` when the site has its own switch. Colors may use `light-dark(a, b)`. Per-toast style: option `className`, styled as `.tst.your-class`. `toast.configure({ springs: { enter: { stiffness, damping } } })` retunes motion (enter, morph, stack). `toast.configure({ icons: { success: ['<svg path d>', ...] } })` replaces status icons (24x24 stroke paths, first is the ring; keep 3 paths for warning and info).
 
@@ -55,7 +56,7 @@ To use another sound library, pass a function: `toast.configure({ sound: (type) 
 - One toast is shown at a time. A new call morphs the live toast instead of stacking. Only the newest caller can update it, so a late result from an older call is ignored.
 - Exception: a held toast (an error, a toast with an action, or `duration: 0`; not a loading toast) keeps its place when another toast arrives. `toast.configure({ held })` chooses: `'list'` (default) shows quick toasts next to the held one, `'queue'` shows new toasts one after another once it is gone, `'replace'` always morphs the single toast on screen.
 - Repeating an identical toast adds a counter (×2) instead of a new toast.
-- Errors, loading and toasts with an action stay until dismissed. Other toasts close after 5 seconds. Hover and keyboard focus pause the timer.
+- By default, errors, loading toasts and toasts with an action stay until dismissed. Other toasts close after 5 seconds. Hover, keyboard focus and a hidden tab pause the countdown.
 - Escape dismisses. Alt+T moves focus into the toast.
 - Messages go through persistent live regions: errors assertive, everything else polite.
 - Respects prefers-reduced-motion. Mirrors in right-to-left pages.

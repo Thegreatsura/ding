@@ -47,6 +47,6 @@ toast.update(id, { type: 'success', title: 'Uploaded', progress: null });
 
 - If no toast appears, confirm the renderer is mounted, the event fires in the browser, and the trigger and renderer resolve the same Ding package. Check for duplicate dependency versions if they live in separate workspace packages.
 - Ding injects a stylesheet on mount. If the content appears unstyled, check for a blocked `style[data-toast]` in DevTools and pass the page's CSP nonce to `Toaster` or `mountToaster()` when required.
-- Set `--tst-bg`, `--tst-fg`, and `--tst-radius` on `.tst-viewport` from a global stylesheet. For one toast, pass `className` and target `.tst.<className>`. When customizing the renderer, preserve its live regions, keyboard dismissal, and reduced-motion behavior.
+- Set `--tst-bg`, `--tst-fg`, and `--tst-radius` on `:root .tst-viewport` in a global stylesheet so these values override Ding’s injected defaults. For one toast, pass `className` and target `.tst.<className>`. When customizing the renderer, preserve its live regions, keyboard dismissal, and reduced-motion behavior.
 
 For the full API and framework examples, see the [Ding docs](https://ding.yusufcengiz.dev/docs.html), [Next.js guide](https://ding.yusufcengiz.dev/nextjs-toast/), and [plain-text reference](https://ding.yusufcengiz.dev/llms.txt).

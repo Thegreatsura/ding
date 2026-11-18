@@ -51,7 +51,7 @@
             "name": "How long should the undo window be?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Long enough to notice and react, often several seconds. Set it with duration. Hover and keyboard focus pause the timer."
+              "text": "Long enough to notice and react, often several seconds. Set it with duration. Hover, keyboard focus and a hidden tab pause the countdown."
             }
           },
           {
@@ -128,7 +128,7 @@
       <h3>Why use undo instead of a confirmation dialog?</h3>
       <p>People confirm out of habit. Doing the action at once and offering undo is faster, and a mistake is still easy to reverse.</p>
       <h3>How long should the undo window be?</h3>
-      <p>Long enough to notice and react, often several seconds. Set it with <code>duration</code>. Hover and keyboard focus pause the timer.</p>
+      <p>Long enough to notice and react, often several seconds. Set it with <code>duration</code>. Hover, keyboard focus and a hidden tab pause the countdown.</p>
       <h3>Can the toast change after the user clicks Undo?</h3>
       <p>Yes. Return a patch from <code>onClick</code>, for example <code>{ type: 'info', title: 'Restored' }</code>.</p>
       <h3>When is undo not enough?</h3>

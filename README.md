@@ -184,7 +184,7 @@ toast.success('Message deleted', {
 | `duration` | Milliseconds before it closes. `0` keeps it until dismissed. Default `5000` |
 | `id` | Reuse an id so repeated calls from one place stay one caller |
 
-Errors, loading toasts and toasts with a button stay until dismissed. Hover, keyboard focus and a hidden tab pause the timer. Repeating the same toast adds a counter (×2).
+By default, errors, loading toasts and toasts with a button stay until dismissed. Hover, keyboard focus and a hidden tab pause the countdown on timed toasts. Repeating the same toast adds a counter (×2).
 
 ## Configure
 
@@ -223,7 +223,7 @@ Set it with `toast.configure`, or pass `held` to `mountToaster` in plain DOM.
 Colors and corner radius are CSS variables. Set them in your own stylesheet and they apply to every toast, in any framework:
 
 ```css
-.tst-viewport {
+:root .tst-viewport {
   --tst-radius: 8px;
   --tst-bg: #1e3a8a;
   --tst-fg: #fff;
