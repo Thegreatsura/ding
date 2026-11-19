@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
-import { createSSRApp, nextTick } from 'vue';
+import { createSSRApp, nextTick, reactive } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { Toaster, toast } from '../src/index.ts';
 
@@ -10,6 +10,7 @@ beforeEach(() => void vi.useFakeTimers());
 
 // The store is a module singleton: remove every toast (they leave on timers) and restore defaults between tests.
 afterEach(() => {
+  vi.restoreAllMocks();
   wrapper?.unmount();
   wrapper = undefined;
   toast.dismiss();
@@ -83,6 +84,44 @@ describe('Vue Toaster', () => {
   it('uses the labels prop for the region and the close button', () => {
     mountToaster({ labels: { region: 'Alertes', dismiss: 'Fermer' } });
     toast.error('Boom', { duration: 0 });
+    expect(viewport().getAttribute('aria-label')).toBe('Alertes');
+    expect(document.querySelector('.tst-close')?.getAttribute('aria-label')).toBe('Fermer');
+  });
+
+  it('only reconfigures when individual prop values change', async () => {
+    mountToaster({ position: 'top-center', theme: 'light', labels: { region: 'Notifications', dismiss: 'Dismiss' } });
+    const configure = vi.spyOn(toast, 'configure');
+
+    await wrapper!.setProps({ labels: { region: 'Notifications', dismiss: 'Dismiss' } });
+    expect(configure).not.toHaveBeenCalled();
+
+    await wrapper!.setProps({ position: 'bottom-left' });
+    expect(configure).toHaveBeenCalledTimes(1);
+    expect(viewport().dataset.position).toBe('bottom-left');
+
+    await wrapper!.setProps({ theme: 'dark' });
+    expect(configure).toHaveBeenCalledTimes(2);
+    expect(viewport().dataset.tstTheme).toBe('dark');
+
+    await wrapper!.setProps({ labels: { region: 'Alertes', dismiss: 'Dismiss' } });
+    expect(configure).toHaveBeenCalledTimes(3);
+    expect(viewport().getAttribute('aria-label')).toBe('Alertes');
+
+    toast.error('Boom', { duration: 0 });
+    await wrapper!.setProps({ labels: { region: 'Alertes', dismiss: 'Fermer' } });
+    expect(configure).toHaveBeenCalledTimes(4);
+    expect(document.querySelector('.tst-close')?.getAttribute('aria-label')).toBe('Fermer');
+  });
+
+  it('follows nested changes to reactive labels', async () => {
+    const labels = reactive({ region: 'Notifications', dismiss: 'Dismiss' });
+    mountToaster({ labels });
+    toast.error('Boom', { duration: 0 });
+
+    labels.region = 'Alertes';
+    labels.dismiss = 'Fermer';
+    await nextTick();
+
     expect(viewport().getAttribute('aria-label')).toBe('Alertes');
     expect(document.querySelector('.tst-close')?.getAttribute('aria-label')).toBe('Fermer');
   });
