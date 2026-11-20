@@ -74,6 +74,30 @@ describe('mountToaster', () => {
     expect(toast.getState().toasts[0]?.phase).toBe('closing');
   });
 
+  it('keeps the outgoing title markup during a morph without writing innerHTML', async () => {
+    const writeHtml = vi.spyOn(Element.prototype, 'innerHTML', 'set').mockImplementation(() => {});
+    const now = vi.spyOn(performance, 'now');
+    try {
+      mount();
+      toast.success('First <tag>', { meta: 'v1', description: 'Older description' });
+      await vi.advanceTimersByTimeAsync(700);
+      now.mockReturnValue(700);
+      toast.success('Second');
+      await Promise.resolve();
+
+      expect(writeHtml).not.toHaveBeenCalled();
+      const ghost = viewport().querySelector('.tst-ghost');
+      expect(ghost?.getAttribute('aria-hidden')).toBe('true');
+      expect(ghost?.querySelector('.tst-title')?.textContent).toBe('First <tag>v1');
+      expect(ghost?.querySelector('.tst-meta')?.textContent).toBe('v1');
+      expect(ghost?.querySelector('.tst-desc')?.textContent).toBe('Older description');
+      expect(viewport().querySelector('.tst-copy:not(.tst-ghost) .tst-title')?.textContent).toBe('Second');
+    } finally {
+      now.mockRestore();
+      writeHtml.mockRestore();
+    }
+  });
+
   it('pointercancel resets a drag without dismissing or flinging the toast', () => {
     mount();
     const id = toast.error('Drag cancel');
