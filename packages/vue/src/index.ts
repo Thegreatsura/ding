@@ -24,7 +24,12 @@ export const Toaster = defineComponent({
     });
     // Watched by value, not by object, so an inline `:labels="{ ... }"` does not reconfigure on every render.
     watch(
-      () => [props.position, props.theme, props.labels?.region, props.labels?.dismiss] as const,
+      [
+        () => props.position,
+        () => props.theme,
+        () => props.labels?.region,
+        () => props.labels?.dismiss,
+      ],
       ([position, theme, region, dismiss]) => toast.configure({ position, theme, labels: { region, dismiss } }),
     );
     onBeforeUnmount(() => unmount?.());

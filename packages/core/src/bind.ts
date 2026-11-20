@@ -189,15 +189,20 @@ function watchMotion(slot: HTMLElement, id: string, t: Toaster): () => void {
 
   // New text: the old line rolls up and out, the new one rolls in. Width springs on its own via the observer.
   const copy = body?.querySelector<HTMLElement>('.tst-copy');
-  const titleOf = () => copy?.querySelector('.tst-title')?.innerHTML;
-  const kind = () => `${pill.dataset.type}|${!!pill.querySelector('.tst-progress')}`;
-  let snap = copy ? { html: copy.innerHTML, w: copy.offsetWidth, title: titleOf(), kind: kind() } : undefined;
+  const snapshot = (element: HTMLElement) => ({
+    html: element.innerHTML,
+    node: element.cloneNode(true),
+    w: element.offsetWidth,
+    title: element.querySelector('.tst-title')?.innerHTML,
+    kind: `${pill.dataset.type}|${!!pill.querySelector('.tst-progress')}`,
+  });
+  let snap = copy ? snapshot(copy) : undefined;
   let ghost: HTMLElement | undefined;
   let lastRoll = 0;
   const mo = new MutationObserver(() => {
     if (!copy || !body) return;
     const prev = snap;
-    snap = { html: copy.innerHTML, w: copy.offsetWidth, title: titleOf(), kind: kind() };
+    snap = snapshot(copy);
     // a ticking description under a steady title (download %) swaps in place; rolling it would make the title flicker.
     // Same for a progress toast that keeps its type: only a real change (loading -> done) rolls.
     if (!prev || prev.html === snap.html || prev.title === snap.title || (prev.kind === snap.kind && snap.kind.endsWith('true')) || phase !== 'open' || reduced()) return;
@@ -209,7 +214,7 @@ function watchMotion(slot: HTMLElement, id: string, t: Toaster): () => void {
     ghost.className = 'tst-copy tst-ghost';
     ghost.setAttribute('aria-hidden', 'true');
     ghost.style.width = `${prev.w}px`;
-    ghost.innerHTML = prev.html;
+    ghost.append(...prev.node.childNodes);
     body.append(ghost);
     const g = ghost;
     const easing = 'cubic-bezier(.2,.8,.2,1)';
