@@ -1,0 +1,36 @@
+name: Bug report
+description: Report unexpected behavior in Ding.
+body:
+  - type: dropdown
+    id: renderer
+    attributes:
+      label: Renderer
+      options:
+        - Plain DOM / core
+        - React
+        - Svelte
+        - Vue
+        - Other or unsure
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions and environment
+      description: Include the Ding version, framework version, and browser or runtime if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+      description: Describe what you expected and what happened. Include any relevant error message.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: A short code snippet, numbered steps, or a link to a minimal example is enough.
+    validations:
+      required: true
