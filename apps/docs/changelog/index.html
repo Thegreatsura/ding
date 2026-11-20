@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ding 0.0.8: countdowns pause in background tabs</title>
-    <meta name="description" content="Ding 0.0.8 pauses timed toasts in background tabs, keeps the countdown bar in sync, and adds an optional skill for coding agents." />
+    <title>Ding 0.0.9 — Trusted Types and Vue fixes</title>
+    <meta name="description" content="Ding 0.0.9 fixes toast title transitions under strict Trusted Types and avoids redundant Vue Toaster configuration updates." />
     <link rel="canonical" href="https://ding.yusufcengiz.dev/changelog/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -13,22 +13,22 @@
     <link rel="stylesheet" href="/changelog.css" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="Ding" />
-    <meta property="og:title" content="What's new in Ding 0.0.8" />
-    <meta property="og:description" content="Countdowns pause in background tabs. An optional skill helps coding agents integrate Ding." />
+    <meta property="og:title" content="What's new in Ding 0.0.9" />
+    <meta property="og:description" content="Toast title transitions work under strict Trusted Types, and the Vue Toaster skips redundant configuration updates." />
     <meta property="og:url" content="https://ding.yusufcengiz.dev/changelog/" />
     <meta property="og:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ding 0.0.8: countdowns pause in background tabs" />
-    <meta name="twitter:description" content="Countdowns pause in background tabs. An optional skill helps coding agents integrate Ding." />
+    <meta name="twitter:title" content="Ding 0.0.9 — Trusted Types and Vue fixes" />
+    <meta name="twitter:description" content="Toast title transitions work under strict Trusted Types, and the Vue Toaster skips redundant configuration updates." />
     <meta name="twitter:image" content="https://ding.yusufcengiz.dev/social-preview.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "TechArticle",
-        "headline": "What's new in Ding 0.0.8",
-        "description": "Countdowns pause in background tabs. An optional skill helps coding agents integrate Ding.",
+        "headline": "What's new in Ding 0.0.9",
+        "description": "Toast title transitions work under strict Trusted Types, and the Vue Toaster skips redundant configuration updates.",
         "url": "https://ding.yusufcengiz.dev/changelog/",
-        "dateModified": "2026-11-18",
+        "dateModified": "2026-11-20",
         "author": { "@type": "Person", "name": "Yusuf Cengiz", "url": "https://yusufcengiz.dev" },
         "about": { "@type": "SoftwareSourceCode", "name": "Ding", "codeRepository": "https://github.com/YusufCeng1z/ding" }
       }
@@ -45,9 +45,23 @@
       <a href="https://github.com/YusufCeng1z/ding">GitHub</a>
     </nav>
     <main>
-      <h1>What's new in Ding 0.0.8</h1>
-      <p class="lead">Timed toasts keep their remaining time when you switch tabs. The countdown bar and the toast close timer stay in sync.</p>
-      <pre><code>npm i @yusufceng1z/ding@0.0.8</code></pre>
+      <h1>What's new in Ding 0.0.9</h1>
+      <p class="lead">Toast titles animate under strict Trusted Types policies. The Vue Toaster skips redundant configuration updates.</p>
+      <pre><code>npm i @yusufceng1z/ding@0.0.9</code></pre>
+
+      <section class="entry" aria-labelledby="trusted-types-009">
+        <h2 id="trusted-types-009">Title transitions work under Trusted Types</h2>
+        <p>When a new toast replaces a visible one, the old title and description animate out under <code>require-trusted-types-for 'script'</code>, including when <code>trusted-types 'none'</code> is set. This applies to React, Svelte, Vue and plain DOM. <a href="https://github.com/YusufCeng1z/ding/issues/46">Issue #46</a></p>
+      </section>
+
+      <section class="entry" aria-labelledby="vue-009">
+        <h2 id="vue-009">Vue skips equivalent label updates</h2>
+        <p>Passing a new <code>labels</code> object with the same strings no longer reconfigures the Toaster. Changes to either label, position or theme still apply. <a href="https://github.com/YusufCeng1z/ding/pull/47">PR #47</a></p>
+      </section>
+
+      <section class="entry" aria-labelledby="release-008">
+        <h2 id="release-008">Ding 0.0.8</h2>
+      </section>
 
       <section class="entry" aria-labelledby="countdown-008">
         <h2 id="countdown-008">Countdowns pause in background tabs</h2>
@@ -154,7 +168,7 @@
 
       <section class="entry" aria-labelledby="dev">
         <h2 id="dev">Older releases</h2>
-        <p><a href="#release-007">What's new in 0.0.7</a> · <a href="#release-006">What's new in 0.0.6</a> · <a href="/changelog/0-0-5/">What's new in 0.0.5</a> · <a href="/changelog/0-0-4/">What's new in 0.0.4</a> · <a href="/changelog/0-0-3/">What's new in 0.0.3</a></p>
+        <p><a href="#release-008">What's new in 0.0.8</a> · <a href="#release-007">What's new in 0.0.7</a> · <a href="#release-006">What's new in 0.0.6</a> · <a href="/changelog/0-0-5/">What's new in 0.0.5</a> · <a href="/changelog/0-0-4/">What's new in 0.0.4</a> · <a href="/changelog/0-0-3/">What's new in 0.0.3</a></p>
       </section>
 
       <footer>Ding is made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a>. MIT licensed, <a href="https://github.com/YusufCeng1z/ding">source on GitHub</a>.</footer>

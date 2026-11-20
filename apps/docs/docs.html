@@ -264,6 +264,7 @@ toast.close(item.id);  // close a visible item in a custom renderer</code></pre>
             <pre data-for="vue"><code>&lt;Toaster :nonce="nonce" /&gt;</code></pre>
             <pre data-for="vanilla"><code>mountToaster({ nonce });</code></pre>
             <p data-for="react">In Next.js, read the nonce your proxy sets with <code>(await headers()).get('x-nonce')</code> in a server component and pass it down.</p>
+            <p>Since Ding 0.0.9, toast title transitions also work with <code>require-trusted-types-for 'script'</code> and <code>trusted-types 'none'</code>.</p>
           </section>
 
           <section id="styling">
