@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/ding-demo.gif" alt="Ding toasts morph in place to show upload progress, invitations, and notifications with action buttons" width="660" />
+  <img src="assets/ding-demo-short.gif" alt="Ding toasts morph in place to show upload progress, invitations, and notifications with action buttons" width="660" />
 </p>
 
 ---
