@@ -13,11 +13,13 @@
 </p>
 
 <p align="center">
-  <a href="https://ding.yusufcengiz.dev">Live demo and docs</a>
+  <a href="https://ding.yusufcengiz.dev/">Home</a> ·
+  <a href="https://ding.yusufcengiz.dev/docs.html">Docs</a> ·
+  <a href="https://www.npmjs.com/package/@yusufceng1z/ding">npm</a>
 </p>
 
 <p align="center">
-  <img src="assets/ding-demo.gif" alt="A progress toast turns into a success toast, then an error toast with a Retry button morphs into a new message" width="660" />
+  <img src="assets/ding-demo.gif" alt="Ding toasts morph in place to show upload progress, invitations, and notifications with action buttons" width="660" />
 </p>
 
 ---
