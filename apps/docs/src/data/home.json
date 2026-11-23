@@ -1,0 +1,22 @@
+{
+  "title": "Ding: spring-physics toasts for React, Svelte, Vue and JS",
+  "description": "Ding is a zero-dependency toast library with spring physics. React, Svelte 5, Vue 3 and plain JavaScript. A new call morphs the toast in place.",
+  "schema": [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      "name": "Ding",
+      "description": "A zero-dependency toast notification library with spring physics. One toast stays on screen and a new call morphs it in place.",
+      "url": "https://ding.yusufcengiz.dev/",
+      "codeRepository": "https://github.com/YusufCeng1z/ding",
+      "programmingLanguage": "TypeScript",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@type": "Person",
+        "name": "Yusuf Cengiz",
+        "url": "https://yusufcengiz.dev"
+      }
+    }
+  ],
+  "body": "<h1>Toasts with real spring physics.</h1>\n        <p>Ding is a toast notification library. New calls morph a quick toast in place; errors and other held toasts keep their place by default. No dependencies, MIT licensed. Works with React, Svelte 5, Vue 3 and plain JavaScript.</p>\n        <h2>Install</h2>\n        <ul>\n          <li>React: <code>npm i @yusufceng1z/ding-react</code></li>\n          <li>Svelte 5: <code>npm i @yusufceng1z/ding-svelte</code></li>\n          <li>Vue 3 and Nuxt: <code>npm i @yusufceng1z/ding-vue</code></li>\n          <li>Plain JavaScript: <code>npm i @yusufceng1z/ding</code></li>\n          <li>shadcn/ui registry: <code>npx shadcn@latest add @ding/ding</code></li>\n        </ul>\n        <h2>Why Ding</h2>\n        <ul>\n          <li>Real springs: size, shape and text move on a spring solver, so interrupting an animation keeps its momentum.</li>\n          <li>No stylesheet to import and no dependencies. Styles are injected from JavaScript.</li>\n          <li>Light, dark and system themes, six positions and right-to-left support.</li>\n          <li>Colors and corner radius are CSS variables, so it is easy to restyle.</li>\n          <li>Rich content: description, avatar, buttons, progress bar, countdown line and small trailing text.</li>\n          <li>Accessible by default: live regions, keyboard dismiss and <code>prefers-reduced-motion</code>.</li>\n        </ul>\n        <p>\n          <a href=\"/docs.html\">Read the docs</a> ·\n          <a href=\"/changelog/\">What's new</a> ·\n          <a href=\"https://github.com/YusufCeng1z/ding\">Source on GitHub</a> ·\n          <a href=\"https://www.npmjs.com/package/@yusufceng1z/ding-react\">npm</a> ·\n          <a href=\"/llms.txt\">llms.txt</a>\n        </p>"
+}

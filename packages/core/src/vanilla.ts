@@ -1,4 +1,4 @@
-import { toast } from './store';
+import { toast, type Toaster } from './store';
 import { injectStyles } from './styles';
 import { bindToast } from './bind';
 import { ICONS } from './icons';
@@ -7,21 +7,26 @@ import type { HeldMode, Position, Theme, ToastItem, ToastLabels } from './types'
 // Escape belongs to what the user is working in: a dialog, menu or text field closes or clears itself first.
 const BUSY = 'dialog,[role=dialog],[aria-modal=true],[role=menu],[role=listbox],input,textarea,select,[contenteditable]';
 let keyboardMounts = 0;
+const viewportStores = new Map<HTMLElement, Toaster>();
 
 /** Shared keyboard handling for every adapter: Escape dismisses, Alt+T moves focus into the toast (which also pauses its timer). */
 export function onToastKey(e: KeyboardEvent): void {
-  if (e.defaultPrevented || !toast.getState().toasts.length) return;
+  if (e.defaultPrevented) return;
   if (e.key === 'Escape') {
     const active = document.activeElement;
     if (active?.closest(BUSY)) return;
     const slot = active?.closest<HTMLElement>('.tst-viewport .tst-slot');
-    const slots = slot?.closest('.tst-viewport')?.querySelectorAll<HTMLElement>('.tst-slot');
-    const focused = slot && slots && toast.getState().toasts[[...slots].indexOf(slot)];
+    const viewport = slot?.closest<HTMLElement>('.tst-viewport');
+    const store = (viewport && viewportStores.get(viewport)) ?? toast;
+    const slots = viewport?.querySelectorAll<HTMLElement>('.tst-slot');
+    const focused = slot && slots && store.getState().toasts[[...slots].indexOf(slot)];
     const id = focused && (focused.phase === 'enter' || focused.phase === 'open') ? focused.id : undefined;
     if (slot && !id) return;
+    const activeStores = [...new Set([toast, ...viewportStores.values()])].filter((t) => t.getState().toasts.length);
+    if (!activeStores.length) return;
     e.preventDefault();
-    if (id) toast.close(id);
-    else toast.dismiss();
+    if (id) store.close(id);
+    else activeStores.forEach((t) => t.dismiss());
   } else if (e.altKey && (e.code === 'KeyT' || e.key.toLowerCase() === 't')) {
     // a button if the toast has one, otherwise the newest toast itself
     const slots = document.querySelectorAll<HTMLElement>('.tst-viewport .tst-slot');
@@ -40,7 +45,9 @@ export function onToastKey(e: KeyboardEvent): void {
         slot.addEventListener('focusout', clear);
       }
       target.focus();
-      toast.pause();
+      const viewport = target.closest<HTMLElement>('.tst-viewport');
+      const store = (viewport && viewportStores.get(viewport)) ?? toast;
+      store.pause();
     }
   }
 }
@@ -86,25 +93,26 @@ const svg = (cls: string, paths: readonly string[], size: number) => {
 
 /** Framework-free renderer. Returns an unmount function. */
 export function mountToaster(
-  opts: { position?: Position; theme?: Theme; labels?: Partial<ToastLabels>; nonce?: string; held?: HeldMode } = {},
+  opts: { position?: Position; theme?: Theme; labels?: Partial<ToastLabels>; nonce?: string; held?: HeldMode; store?: Toaster } = {},
 ): () => void {
   if (typeof document === 'undefined') return () => {}; // server render: nothing to mount
-  const { nonce, ...config } = opts;
+  const { nonce, store = toast, ...config } = opts;
   injectStyles(document, { nonce });
-  toast.configure(config);
+  store.configure(config);
   const vp = el('div', 'tst-viewport', document.body);
+  viewportStores.set(vp, store);
   vp.setAttribute('role', 'region');
   const status = el('div', 'tst-sr', vp);
   status.setAttribute('role', 'status');
   const alert = el('div', 'tst-sr', vp);
   alert.setAttribute('role', 'alert');
-  vp.onpointerenter = () => toast.pause();
+  vp.onpointerenter = () => store.pause();
   vp.onpointerleave = () => {
-    if (!vp.contains(document.activeElement)) toast.resume();
+    if (!vp.contains(document.activeElement)) store.resume();
   };
-  vp.addEventListener('focusin', (e) => (e.target as Element).matches(':focus-visible') && toast.pause());
+  vp.addEventListener('focusin', (e) => (e.target as Element).matches(':focus-visible') && store.pause());
   vp.addEventListener('focusout', (e) => {
-    if (!vp.contains(e.relatedTarget as Node | null) && !vp.matches(':hover')) toast.resume();
+    if (!vp.contains(e.relatedTarget as Node | null) && !vp.matches(':hover')) store.resume();
   });
   const releaseKeys = retainToastKeys();
 
@@ -118,7 +126,7 @@ export function mountToaster(
   }
 
   function render() {
-    const s = toast.getState();
+    const s = store.getState();
     vp.dataset.position = s.position;
     vp.dataset.tstTheme = s.theme;
     vp.setAttribute('aria-label', s.labels.region);
@@ -176,7 +184,7 @@ export function mountToaster(
         if (!sec) {
           sec = el('button', 'tst-action tst-secondary');
           sec.type = 'button';
-          sec.onclick = () => toast.act(t.id, 'secondary');
+          sec.onclick = () => store.act(t.id, 'secondary');
           body.insertBefore(sec, body.querySelector('.tst-action, .tst-close'));
         }
         sec.textContent = t.secondary.label;
@@ -189,7 +197,7 @@ export function mountToaster(
           act = el('button', 'tst-action');
           act.type = 'button';
           body.insertBefore(act, body.querySelector('.tst-close')); // a close button left from a sticky toast stays last
-          act.onclick = () => toast.act(t.id);
+          act.onclick = () => store.act(t.id);
         }
         act.textContent = t.action.label;
         act.tabIndex = t.phase === 'open' ? 0 : -1;
@@ -202,17 +210,17 @@ export function mountToaster(
           close = el('button', 'tst-close', body);
           close.type = 'button';
           close.append(svg('', ['M6 6l12 12M18 6L6 18'], 12));
-          close.onclick = () => toast.close(t.id);
+          close.onclick = () => store.close(t.id);
         }
         close.setAttribute('aria-label', s.labels.dismiss);
         close.tabIndex = t.phase === 'open' ? 0 : -1;
       }
       // bind only once the markup exists: the motion code measures the body on its first frame
-      n.off ??= bindToast(n.slot, t.id);
+      n.off ??= bindToast(n.slot, t.id, store);
     });
   }
 
-  const off = toast.subscribe(render);
+  const off = store.subscribe(render);
   render();
   let mounted = true;
   return () => {
@@ -221,6 +229,7 @@ export function mountToaster(
     off();
     releaseKeys();
     nodes.forEach((n) => n.off?.());
+    viewportStores.delete(vp);
     vp.remove();
   };
 }

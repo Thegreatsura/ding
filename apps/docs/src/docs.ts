@@ -2,16 +2,20 @@ import { mountToaster, toast } from '@yusufceng1z/ding';
 import { makeSeg } from './site';
 import './site.css';
 import './docs.css';
-import { showStars } from './stars';
 
 // real toasts for the Run buttons
-mountToaster({ theme: 'dark', held: 'replace' });
+mountToaster({ theme: 'light', held: 'replace', position: 'top-center' });
 // pending steps of the last example are cancelled when another one starts, so they never fight over the toast
 const timers: ReturnType<typeof setTimeout>[] = [];
 const later = (f: () => void, ms: number) => void timers.push(setTimeout(f, ms));
 const RUN: Record<string, () => void> = {
+  save: () => void toast.success('Saved'),
   show: () => [() => toast.success('Saved'), () => toast.error('Payment failed', { description: 'Card declined' }), () => toast.warning('Storage almost full'), () => toast.info('New version available')].forEach((f, i) => later(f, i * 1500)),
   promise: () => void toast.promise(new Promise((r) => setTimeout(r, 1800)), { loading: 'Saving…', success: 'Saved', error: 'Could not save' }),
+  'promise-error': () => {
+    const result = new Promise((_, reject) => setTimeout(() => reject(new Error('Save failed')), 1200));
+    void toast.promise(result, { loading: 'Saving…', success: 'Saved', error: 'Could not save' }).catch(() => {});
+  },
   progress: () => {
     const id = toast.loading('Uploading photo…', { progress: 0 });
     later(() => toast.update(id, { progress: 0.6 }), 800);
@@ -64,8 +68,9 @@ document.querySelectorAll('pre').forEach((pre) => {
   let resetCopy: ReturnType<typeof setTimeout> | undefined;
   b.onclick = async () => {
     const code = pre.querySelector('code')!;
+    const snippet = code.innerText;
     try {
-      await navigator.clipboard.writeText(code.innerText);
+      await navigator.clipboard.writeText(snippet);
       b.textContent = 'Copied';
       b.dataset.copied = '';
     } catch {
@@ -122,5 +127,3 @@ addEventListener('scroll', () => {
   requestAnimationFrame(() => ((queued = false), update()));
 }, { passive: true });
 update();
-
-showStars();

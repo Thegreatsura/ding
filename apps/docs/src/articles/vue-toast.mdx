@@ -1,0 +1,103 @@
+---
+title: Vue 3 and Nuxt toast notifications with Ding
+heading: Toast notifications in Vue 3 and Nuxt
+description: Mount Ding in Vue 3 or Nuxt, trigger a toast from a button, and report real save results with a Promise example.
+demo: true
+---
+
+Mount one Ding `Toaster` at the root of your app. Import `toast` from the same Vue package wherever a client interaction needs feedback.
+
+<div class="try" role="group" aria-label="Try a success notification">
+  <button type="button" data-demo="success">Show a success toast</button>
+</div>
+
+## Install and show your first toast
+
+```bash
+npm install @yusufceng1z/ding-vue
+```
+
+In a Vue app, put the `Toaster` in `App.vue`. This button tests that the renderer is connected.
+
+```vue
+<script setup>
+import { Toaster, toast } from '@yusufceng1z/ding-vue';
+</script>
+
+<template>
+  <Toaster position="bottom-right" theme="system" />
+  <button type="button" @click="toast.success('Saved')">Show toast</button>
+</template>
+```
+
+Keep the renderer at the root when you move the button into a form or a child component. Only that component needs to import `toast`.
+
+## Mount Ding in Nuxt
+
+Place the renderer in `app.vue` so it stays mounted when you navigate. Ding mounts its browser viewport in Vue’s `onMounted` hook.
+
+```vue
+<script setup>
+import { Toaster } from '@yusufceng1z/ding-vue';
+</script>
+
+<template>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <Toaster />
+</template>
+```
+
+Call `toast` from a client event such as a button click. If a Nuxt server route performs the save, call the route from the client and show the result there.
+
+## Show the result of a save
+
+Call this function from your form’s submit handler. The `finally` block restores the button after success or failure, and Ding updates the loading toast with the outcome.
+
+```vue
+<script setup>
+import { ref } from 'vue';
+import { toast } from '@yusufceng1z/ding-vue';
+
+const saving = ref(false);
+const name = ref('');
+
+async function save() {
+  if (saving.value) return;
+  saving.value = true;
+  try {
+    await toast.promise(
+      () => $fetch('/api/profile', {
+        method: 'POST',
+        body: { name: name.value },
+      }),
+      {
+        loading: 'Saving profile…',
+        success: 'Profile saved',
+        error: 'Could not save profile',
+      },
+    );
+  } catch (error) {
+    console.error(error);
+  } finally {
+    saving.value = false;
+  }
+}
+</script>
+
+<template>
+  <form @submit.prevent="save">
+    <label>Name <input v-model="name" required /></label>
+    <button type="submit" :disabled="saving">Save profile</button>
+  </form>
+</template>
+```
+
+The `$fetch` example assumes a Nuxt endpoint at `/api/profile`. In plain Vue, use your existing API client for the save. If a field fails validation, show its error next to the field so the person can fix it.
+
+## If the toast doesn’t appear
+
+Check that the root renderer and the event handler import from `@yusufceng1z/ding-vue`. If notifications appear without styles, check the browser console for a Content Security Policy error and follow the [CSP nonce instructions](/docs.html#csp).
+
+See the [Ding API reference](/docs.html#configure) for position, theme, and accessible labels.

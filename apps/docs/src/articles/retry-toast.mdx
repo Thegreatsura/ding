@@ -1,0 +1,60 @@
+---
+title: Add a Retry button to a failed request toast
+heading: Add a Retry button to an error toast
+description: Show a loading toast, keep a failed request visible, and let people retry a read-only request without leaving the page.
+demo: true
+---
+
+When a temporary failure stops a request, say what failed and give the person a way to retry. Keep the action visible long enough for them to use it.
+
+<div class="try" role="group" aria-label="Try the failed request example">
+  <button type="button" data-demo="retry">Simulate failed request</button>
+</div>
+
+## Update the loading toast with the result
+
+Keep the ID returned by `toast.loading()`. On success, update that toast with a short result. On failure, use a persistent error toast with a **Retry** action.
+
+This example reloads a read-only list. Call `loadProjects(renderProjects)` from your refresh button, with a callback that renders the items returned by your endpoint.
+
+```js
+let loading = false;
+
+async function loadProjects(renderProjects) {
+  if (loading) return;
+
+  loading = true;
+  const id = toast.loading('Loading projects…');
+
+  try {
+    const response = await fetch('/api/projects');
+    if (!response.ok) throw new Error(String(response.status));
+
+    const projects = await response.json();
+    renderProjects(projects);
+    toast.update(id, { type: 'success', title: 'Projects updated' });
+  } catch {
+    toast.update(id, {
+      type: 'error',
+      title: 'Could not load projects',
+      description: 'Try loading the list again.',
+      action: {
+        label: 'Retry',
+        onClick: () => { void loadProjects(renderProjects); },
+      },
+    });
+  } finally {
+    loading = false;
+  }
+}
+```
+
+Import `toast` from the same package as your renderer. For instance, a React app imports it from `@yusufceng1z/ding-react`.
+
+The Retry button starts a new loading toast. Ding then closes the error toast whose action you clicked. The loading flag prevents overlapping requests if someone also clicks the refresh button.
+
+## Use a recovery action that matches the failure
+
+A temporary failure on a read-only request is a good fit for Retry. If the server asks the person to sign in, link to sign-in. If form input is invalid, explain how to fix the field in the form. Keep an inline error visible when the page would otherwise be empty.
+
+Action toasts stay visible by default. Test that **Retry** works with the keyboard and that the updated list stays visible after the toast closes. The [accessibility guide](/toast-accessibility/) covers announcements and focus, and the [Promise examples](/docs.html#update) show the shorter form for requests that need no recovery button.

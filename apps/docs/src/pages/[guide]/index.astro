@@ -1,0 +1,62 @@
+---
+import Site from '../../layouts/Site.astro';
+import ArticleDemo from '../../components/ArticleDemo.astro';
+import guides from '../../data/guides.json';
+import { mdxArticles } from '../../data/articles';
+
+export function getStaticPaths() {
+  return [
+    ...Object.entries(guides).map(([guide, article]) => ({ params: { guide }, props: { article } })),
+    ...mdxArticles.map(({ slug, Content, ...article }) => ({ params: { guide: slug }, props: { article, Content } })),
+  ];
+}
+const { article, Content } = Astro.props;
+const schema = 'schema' in article ? article.schema : [{
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: article.heading,
+  description: article.description,
+  image: new URL('/social-preview.png', Astro.site).href,
+  mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+}];
+---
+<Site {...article} {schema} section="article" customIntro={!Content}>
+  {Content ? <Content /> : 'body' in article && <Fragment set:html={article.body} />}
+  {'next' in article && <p class="article-more"><a href={article.next.href}>{article.next.label}</a></p>}
+  {article.demo && <ArticleDemo />}
+</Site>
+
+<script>
+  document.querySelectorAll<HTMLPreElement>('main.prose pre').forEach(pre => {
+    const code = pre.querySelector('code');
+    if (!code) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    const toolbar = document.createElement('div');
+    toolbar.className = 'pbar';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Copy';
+    button.className = 'pcopy';
+    button.setAttribute('aria-label', 'Copy code');
+    let reset: ReturnType<typeof setTimeout>;
+    button.addEventListener('click', async () => {
+      clearTimeout(reset);
+      try {
+        await navigator.clipboard.writeText(code.innerText);
+        button.textContent = 'Copied';
+      } catch {
+        getSelection()?.selectAllChildren(code);
+        button.textContent = 'Copy selected text';
+      }
+      button.setAttribute('aria-label', button.textContent);
+      reset = setTimeout(() => {
+        button.textContent = 'Copy';
+        button.setAttribute('aria-label', 'Copy code');
+      }, 1600);
+    });
+    toolbar.append(button);
+    pre.before(wrapper);
+    wrapper.append(toolbar, pre);
+  });
+</script>

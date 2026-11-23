@@ -1,0 +1,78 @@
+---
+const { pathname, section, home } = Astro.props;
+const navigation = [
+  { href: '/docs.html', label: 'Docs', area: 'docs' },
+  { href: '/playground/', label: 'Playground', area: 'playground' },
+  { href: '/changelog/', label: "What's new", area: 'release' },
+];
+---
+<header class:list={['site-header', { 'site-header-home': home }]}>
+  {!home && <a class="home-icon" href="/" aria-label="Ding home"><img src="/favicon.svg" alt="" width="36" height="36" /></a>}
+  <nav class="site-nav" aria-label="Site">
+    {navigation.map(({ href, label, area }) => (
+      <a class="navlink" href={href} aria-current={pathname === href ? 'page' : area === section ? 'location' : undefined}>{label}</a>
+    ))}
+    {home && <a class="npm-header-count" href="https://www.npmjs.com/package/@yusufceng1z/ding" target="_blank" rel="noopener noreferrer">npm <strong data-npm-count></strong></a>}
+    <a class="gh" href="https://github.com/YusufCeng1z/ding" target="_blank" rel="noopener noreferrer" aria-label="Star Ding on GitHub"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span class="github-label">Star on GitHub</span></a>
+  </nav>
+</header>
+<script>
+  import { showCoreDownloads } from '../downloads';
+  import { showStars } from '../stars';
+  showStars();
+  const downloads = document.querySelector<HTMLAnchorElement>('.npm-header-count');
+  if (downloads) void showCoreDownloads(downloads);
+</script>
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 76px;
+    max-width: 1000px;
+    margin-inline: auto;
+    padding: 12px clamp(16px, 4vw, 44px);
+  }
+  .site-header-home { min-height: 56px; max-width: 720px; padding: 8px 20px; }
+  .home-icon { display: grid; place-items: center; flex: 0 0 40px; min-height: 36px; }
+  .home-icon img { display: block; }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+    gap: 4px;
+    margin-inline-start: auto;
+  }
+  .site-nav :is(.navlink, .gh) { display: inline-flex; align-items: center; min-height: 36px; }
+  .npm-header-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding-inline: 6px;
+    color: var(--mute);
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .npm-header-count strong { color: var(--ink); font-weight: 650; }
+  .npm-header-count:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .navlink[aria-current] { background: var(--soft); }
+  @media (max-width: 560px) {
+    .site-header { gap: 4px; }
+    .site-nav :is(.navlink, .gh) { padding-inline: 8px; }
+    .github-label { display: none; }
+  }
+  @media (max-width: 360px) {
+    .site-header-home { padding-inline: 8px; }
+    .site-header-home .navlink { font-size: 12px; }
+    .npm-header-count { padding-inline: 3px; font-size: 11px; }
+    .home-icon { flex-basis: 36px; }
+    .site-nav { gap: 2px; }
+    .site-nav :is(.navlink, .gh) { padding-inline: 4px; }
+    .site-nav .gh :global(.gh-n) { display: none; }
+  }
+</style>

@@ -1,7 +1,7 @@
 import { mountToaster, toast } from '@yusufceng1z/ding';
 
 // Live demo for the keyword pages: buttons fire the real toast.
-mountToaster({ position: 'top-center', theme: 'system', held: 'replace' });
+mountToaster({ position: 'top-center', theme: 'light', held: 'replace' });
 
 const RUN: Record<string, () => void> = {
   success: () => void toast.success('Saved'),
@@ -12,6 +12,19 @@ const RUN: Record<string, () => void> = {
     void toast.success('Message deleted', {
       action: { label: 'Undo', onClick: () => ({ type: 'info', title: 'Restored' }) },
     }),
+  retry: () => void toast.error('Could not load projects', {
+    description: 'Try loading the list again.',
+    action: {
+      label: 'Retry',
+      onClick: () => {
+        void toast.promise(() => new Promise(resolve => setTimeout(resolve, 900)), {
+          loading: 'Loading projects…',
+          success: 'Projects updated',
+          error: 'Could not load projects',
+        });
+      },
+    },
+  }),
   progress: () => {
     const id = toast.loading('Uploading photo…', { progress: 0 });
     [0.3, 0.6, 0.9].forEach((p, i) => setTimeout(() => toast.update(id, { progress: p }), 500 * (i + 1)));

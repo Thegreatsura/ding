@@ -1,0 +1,32 @@
+---
+import releases from '../data/releases.json';
+const relocated = new Set(['0.0.6', '0.0.7', '0.0.8', '0.0.9']);
+const latest = releases.find(({ version }) => !version.includes('-'))?.version;
+---
+<ul class="release-list" id="dev">
+  {releases.map(({ version, slug, summary, date, body }) => (
+    <li id={`release-${version.replaceAll('.', '')}`} data-relocated={relocated.has(version) || undefined}>
+      {relocated.has(version) && [...body.matchAll(/<h2 id="([^"]+)"/g)].map(([, id]) => <span {id} hidden />)}
+      <a href={`/changelog/${slug}/`}>
+        <strong class="release-version">{version}{version === latest && <span class="release-badge">Latest</span>}</strong>
+        <span>{summary}</span>
+        <time datetime={date}>{date}</time>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<script>
+  function openLegacyRelease() {
+    const anchor = document.getElementById(location.hash.slice(1));
+    const item = anchor?.closest('li[data-relocated]');
+    const link = item?.querySelector('a');
+    if (!link) return;
+    const url = new URL(link.href);
+    url.search = location.search;
+    if (anchor !== item) url.hash = location.hash;
+    location.replace(url);
+  }
+  openLegacyRelease();
+  window.addEventListener('hashchange', openLegacyRelease);
+</script>

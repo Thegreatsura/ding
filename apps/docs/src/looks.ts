@@ -46,16 +46,16 @@ export const LOOKS: Record<string, Look> = {
 };
 
 /** The CSS a user would paste. The page applies exactly this text, so the preview and the snippet cannot drift apart. */
-export function lookCss(l: Look): string {
+export function lookCss(l: Look, viewport = '.tst-viewport'): string {
   const vars: string[] = [];
   if (l.radius !== DEFAULT.radius) vars.push(`--tst-radius: ${l.radius}px;`);
   if (l.size !== DEFAULT.size) vars.push(`--tst-size: ${l.size}px;`, '--tst-pad: 24px;', 'font-size: 16px;');
   for (const [k] of COLORS) if (l.colors[k]) vars.push(`--tst-${k}: ${l.colors[k]};`);
   const out: string[] = [];
-  if (vars.length) out.push(`:root .tst-viewport {\n  ${vars.join('\n  ')}\n}`);
+  if (vars.length) out.push(`:root ${viewport} {\n  ${vars.join('\n  ')}\n}`);
   if (l.filled) {
     for (const t of ['success', 'error', 'warning', 'info', 'loading'] as const) {
-      out.push(`.tst-viewport .tst[data-type=${t}] { --fill: ${(t !== 'loading' && l.colors[t]) || FILL[t]}; --on: ${l.colors.on ?? '#fff'}; --c: ${l.colors.on ?? '#fff'}; }`);
+      out.push(`${viewport} .tst[data-type=${t}] { --fill: ${(t !== 'loading' && l.colors[t]) || FILL[t]}; --on: ${l.colors.on ?? '#fff'}; --c: ${l.colors.on ?? '#fff'}; }`);
     }
   }
   return out.join('\n');
@@ -74,9 +74,9 @@ export function lookJs(l: Look): string {
 }
 
 let tag: HTMLStyleElement | undefined;
-function apply(l: Look) {
+function apply(l: Look, viewport?: string) {
   tag ??= Object.assign(document.createElement('style'), { id: 'ding-look' });
-  tag.textContent = lookCss(l);
+  tag.textContent = lookCss(l, viewport);
   document.head.append(tag); // last in the head, so it wins over the library's own stylesheet
   toast.configure({ springs: SPRINGS[l.motion], icons: { success: l.icon === 'heart' ? ICON_HEART : ICON_DEFAULT } });
 }
@@ -86,12 +86,12 @@ function apply(l: Look) {
  * The pill size is read when a toast is created, and springs only apply to new toasts,
  * so when either changes the open toast leaves first.
  */
-export function restyle(prev: Look, next: Look, then: () => void) {
+export function restyle(prev: Look, next: Look, then: () => void, viewport?: string) {
   if (prev.size !== next.size || prev.motion !== next.motion) {
     toast.dismiss();
-    setTimeout(() => (apply(next), then()), 550);
+    setTimeout(() => (apply(next, viewport), then()), 550);
   } else {
-    apply(next);
+    apply(next, viewport);
     then();
   }
 }

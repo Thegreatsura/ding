@@ -1,6 +1,5 @@
 import './site.css';
 import './playground.css';
-import { showStars } from './stars';
 import { mountToaster, toast, type ToastType } from '@yusufceng1z/ding';
 import { BASE, COLORS, DEFAULT, FILL, LOOKS, lookCss, lookJs, restyle, type ColorKey, type Look, type Motion } from './looks';
 
@@ -117,7 +116,6 @@ const swatches = swatchList.map(([k, text]) => {
 });
 
 $('#reset').onclick = () => set(clone(DEFAULT));
-
 const code = $('#css');
 function snippet() {
   const css = lookCss(look);
@@ -159,5 +157,3 @@ copy.onclick = async () => {
 };
 
 set(clone(DEFAULT));
-
-showStars();

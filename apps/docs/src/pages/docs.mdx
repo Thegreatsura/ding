@@ -1,0 +1,85 @@
+---
+layout: ../layouts/Site.astro
+title: Ding documentation — toast setup, examples and API
+heading: Documentation
+path: /docs.html
+description: Install Ding, show your first toast, and try the patterns you’ll use in your app.
+section: docs
+---
+import Quickstart from '../components/Quickstart.astro';
+import Example from '../components/Example.astro';
+import Reference from '../components/Reference.astro';
+
+<Quickstart />
+
+<Reference topic="show" />
+
+<section id="update">
+  <h2 id="promise">Show the result of a promise</h2>
+  <p>Start with a loading toast, then show whether the save worked.</p>
+  <Example run="promise" code={`await toast.promise(save(), {
+  loading: 'Saving…',
+  success: 'Saved',
+  error: 'Could not save',
+});`} />
+  <Example run="promise-error" code={`try {
+  await toast.promise(save(), {
+    loading: 'Saving…',
+    success: 'Saved',
+    error: 'Could not save',
+  });
+} catch (error) {
+  console.error(error);
+}`} />
+</section>
+
+<section id="progress">
+  <h2>Update progress in place</h2>
+  <p>Keep the toast ID so each progress update changes the same notification.</p>
+  <Example run="progress" code={`const id = toast.loading('Uploading photo…', { progress: 0 });
+
+toast.update(id, { progress: 0.6 });
+toast.update(id, {
+  type: 'success',
+  title: 'Photo uploaded',
+  progress: null,
+});`} />
+</section>
+
+<section id="actions">
+  <h2>Offer an Undo action</h2>
+  <p>Return a patch from the action to show that the message was restored.</p>
+  <Example run="undo" code={`toast.success('Message deleted', {
+  action: {
+    label: 'Undo',
+    onClick: () => {
+      restore();
+      return { type: 'info', title: 'Restored' };
+    },
+  },
+});`} />
+</section>
+
+<p>For error actions, see <a href="/retry-toast/">how to add Retry to a failed request</a>.</p>
+
+<Reference topic="options" />
+<Reference topic="configure" />
+<Reference topic="styling" />
+
+<p>See the <a href="/toast-css-variables/">CSS variables guide</a> for light, dark, and per-toast examples.</p>
+<Reference topic="sound" />
+<Reference topic="a11y" />
+
+<section id="troubleshooting">
+  <h2>Troubleshooting</h2>
+  <dl class="opts">
+    <dt>Nothing appears</dt>
+    <dd>Mount one Toaster near the root. Import it and <code>toast</code> from the same package. In Next.js and Nuxt, trigger the toast from client code.</dd>
+    <dt>The toast has no styles</dt>
+    <dd>Check the browser console for a Content Security Policy error. If it blocks Ding’s stylesheet, pass your page’s <a href="#csp">CSP nonce</a> to the Toaster.</dd>
+    <dt>An action stays on screen</dt>
+    <dd>Action and error toasts stay until dismissed by default. Pass a duration for a timed action and use <a href="#held">held mode</a> to decide how long-lived toasts share the screen.</dd>
+    <dt>Need a different look</dt>
+    <dd>Start with <a href="#styling">CSS variables</a> or use the <a href="/playground/">playground</a> to preview a style and copy the code.</dd>
+  </dl>
+</section>

@@ -1,0 +1,72 @@
+---
+import Example from './Example.astro';
+import integrations from '../data/docs-setup.json';
+
+const frameworks = [
+  {
+    key: 'react',
+    suffix: '-react',
+    code: `import { Toaster, toast } from '@yusufceng1z/ding-react';
+
+export default function App() {
+  return (
+    <>
+      <Toaster />
+      <button onClick={() => toast.success('Saved')}>Save</button>
+    </>
+  );
+}`,
+  },
+  {
+    key: 'svelte',
+    suffix: '-svelte',
+    code: `<script>
+  import { Toaster, toast } from '@yusufceng1z/ding-svelte';
+</script>
+
+<Toaster />
+<button onclick={() => toast.success('Saved')}>Save</button>`,
+  },
+  {
+    key: 'vue',
+    suffix: '-vue',
+    code: `<script setup>
+import { Toaster, toast } from '@yusufceng1z/ding-vue';
+</script>
+
+<template>
+  <Toaster />
+  <button @click="toast.success('Saved')">Save</button>
+</template>`,
+  },
+  {
+    key: 'vanilla',
+    suffix: '',
+    code: `import { mountToaster, toast } from '@yusufceng1z/ding';
+
+mountToaster();
+document.querySelector('#save').addEventListener('click', () => {
+  toast.success('Saved');
+});`,
+  },
+];
+---
+<section id="install">
+  <h2>Install Ding</h2>
+  <div class="fwpick"><div id="fw"></div></div>
+  {frameworks.map(({ key, suffix }) => <pre data-for={key}><code>{'npm install @yusufceng1z/ding' + suffix}</code></pre>)}
+  <p data-for="react">Using shadcn/ui? <a href="/shadcn-toast/">Install the Ding registry component</a>.</p>
+  <p>For coding agents, <code>npx skills add YusufCeng1z/ding --skill ding</code> installs the optional Ding skill.</p>
+</section>
+<section id="setup">
+  <h2>Your first toast</h2>
+  <p>Mount one toaster near your app’s root, then call <code>toast.success()</code> from the Save button.</p>
+  <p data-for="vanilla">Add a button with <code>id="save"</code> to your page before running this script.</p>
+  {frameworks.map(({ key, code }) => <div data-for={key}><Example run="save" code={code} /></div>)}
+  <Fragment set:html={integrations.nextjs} />
+  <Fragment set:html={integrations.nuxt} />
+  <p data-for="vue">See the <a href="/vue-toast/">Vue and Nuxt guide</a> for a complete save example.</p>
+</section>
+<script>
+  import '../docs';
+</script>

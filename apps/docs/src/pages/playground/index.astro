@@ -1,0 +1,36 @@
+---
+import Site from '../../layouts/Site.astro';
+import playground from '../../data/playground.json';
+---
+<Site {...playground} section="playground" customIntro>
+  <div class="hero">
+          <h1>Playground</h1>
+          <p class="tag">Pick a style, tweak it, copy the code.</p>
+        </div>
+
+        <div class="stage" id="stage" role="region" aria-label="Toast preview">
+          <button type="button" class="next" id="next">Next toast</button>
+        </div>
+
+        <div class="row" id="presets" role="group" aria-label="Ready-made styles"></div>
+
+        <div class="panel">
+          <div class="ctl"><label class="lbl" for="radius">Corner radius</label><div class="rad"><input id="radius" type="range" min="0" max="22" value="22" /><output id="radius-out" for="radius">22 px</output></div></div>
+          <div class="ctl"><span class="lbl" id="l-size">Size</span><div class="opts" id="size" role="group" aria-labelledby="l-size"></div></div>
+          <div class="ctl"><span class="lbl" id="l-theme">Theme</span><div class="opts" id="theme" role="group" aria-labelledby="l-theme"></div></div>
+          <div class="ctl"><span class="lbl" id="l-filled">Surface</span><div class="opts" id="filled" role="group" aria-labelledby="l-filled"></div></div>
+          <div class="ctl"><span class="lbl" id="l-motion">Motion</span><div class="opts" id="motion" role="group" aria-labelledby="l-motion"></div></div>
+          <div class="ctl"><span class="lbl" id="l-icon">Custom icon</span><div class="opts" id="icon" role="group" aria-labelledby="l-icon"></div></div>
+          <div class="ctl"><span class="lbl">Colors</span><div class="swatches" id="colors"></div></div>
+        </div>
+        <button type="button" class="quiet reset" id="reset">Reset all</button>
+
+        <div class="snippet">
+          <pre tabindex="0"><code id="css"></code></pre>
+          <button type="button" class="copy" id="copy">Copy</button>
+        </div>
+        <span class="pg-status" id="status" role="status"></span>
+</Site>
+<script>
+  import '../../playground';
+</script>

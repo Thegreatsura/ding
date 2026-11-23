@@ -1,0 +1,145 @@
+---
+import '../site.css';
+import '../docs.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import ArticleLinks from '../components/ArticleLinks.astro';
+
+const { frontmatter = Astro.props } = Astro.props;
+const { title, description, schema = [], section, heading = title } = frontmatter;
+const canonical = new URL(frontmatter.path ?? Astro.url.pathname, Astro.site);
+const socialImage = new URL('/social-preview.png', Astro.site);
+const pageType = section === 'article' || section === 'release' ? 'article' : 'website';
+const docs = section === 'docs';
+const home = section === 'home';
+const playground = section === 'playground';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {import.meta.env.PUBLIC_DING_PREVIEW === '1' && <meta name="robots" content="noindex" />}
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    <meta property="og:type" content={pageType} />
+    <meta property="og:site_name" content="Ding" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={socialImage.href} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage.href} />
+    {schema.map((item) => <script type="application/ld+json" set:html={JSON.stringify(item).replaceAll('<', '\\u003c')} />)}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>{title}</title>
+    {import.meta.env.PROD && import.meta.env.PUBLIC_DING_PREVIEW !== '1' && (
+      <>
+        <script is:inline>window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments); };</script>
+        <script is:inline defer src="/_vercel/insights/script.js"></script>
+      </>
+    )}
+  </head>
+  <body class:list={{ docs: !home && !playground, 'home-page': home }} data-fw="react">
+    <a class="skip" href="#main">Skip to content</a>
+    <SiteHeader pathname={canonical.pathname} {section} {home} />
+    <div class="page">
+      <div class:list={{ shell: !home && !playground, standalone: !docs && !home && !playground }}>
+        {docs && (
+          <aside class="side">
+            <button class="toc-toggle" type="button" aria-expanded="false" aria-controls="docs-toc" hidden>On this page <span aria-hidden="true"></span></button>
+            <nav id="docs-toc" aria-label="On this page">
+              <div class="toc-group">
+                <span class="toc-label">Get started</span>
+                <a href="#install">Install Ding</a>
+                <a href="#setup">Your first toast</a>
+                <a href="#nextjs" data-for="react">Next.js</a>
+                <a href="#nuxt" data-for="vue">Nuxt</a>
+              </div>
+              <div class="toc-group">
+                <span class="toc-label">Examples</span>
+                <a href="#show">Toast types</a>
+                <a href="#update">Promise</a>
+                <a href="#progress">Progress</a>
+                <a href="#actions">Undo</a>
+              </div>
+              <div class="toc-group">
+                <span class="toc-label">Reference</span>
+                <a href="#options">Toast options</a>
+                <a href="#configure">Configuration</a>
+                <a href="#held">Held toasts</a>
+                <a href="#csp">CSP</a>
+                <a href="#styling">Styling</a>
+                <a href="#sound">Sound</a>
+                <a href="#a11y">Accessibility</a>
+                <a href="#troubleshooting">Troubleshooting</a>
+              </div>
+            </nav>
+          </aside>
+        )}
+        <main id="main" class:list={[{ playground, prose: section === 'article' || section === 'release' }]}>
+          {!frontmatter.customIntro && (
+            <div class="docs-intro">
+              <h1>{heading}</h1>
+              <p>{description}</p>
+            </div>
+          )}
+          <slot />
+        </main>
+      </div>
+      <footer>{docs && <ArticleLinks />}<a href="/llms.txt">Plain text</a> · Made by <a href="https://yusufcengiz.dev">Yusuf Cengiz</a></footer>
+    </div>
+  </body>
+</html>
+<style is:global>
+  .docs .shell.standalone { grid-template-columns: minmax(0, 1fr); }
+  .standalone main { max-width: 66ch; width: 100%; margin-inline: auto; }
+  .docs main > section:last-child { min-block-size: 0; }
+  .docs .prose { gap: 16px; font-size: 16px; }
+  .docs .prose h2 { margin-top: 12px; }
+  .docs .prose :is(ul, ol) { margin: 0; padding-inline-start: 24px; }
+  .docs .prose li + li { margin-top: 6px; }
+  .docs .prose a, .docs section > p a { color: var(--ink); text-underline-offset: 3px; }
+  .try { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .release-list { padding: 0; margin: 0; list-style: none; }
+  .release-list li + li { border-top: 1px solid var(--line); }
+  .release-list a { display: grid; grid-template-columns: minmax(110px, auto) 1fr auto; gap: 6px 16px; align-items: baseline; padding: 12px 0; text-decoration: none; color: var(--ink); }
+  .release-list a:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+  .release-list time { font-size: 13px; }
+  .release-version { display: inline-flex; align-items: center; gap: 7px; }
+  .release-badge { padding: 1px 7px; border-radius: 999px; background: #e7f5ea; color: #22653c; font-size: 11px; font-weight: 650; white-space: nowrap; }
+  .release-list a > :is(time, span) { color: var(--mute); }
+  .prose .demo { border: 1px solid var(--line); background: var(--soft); border-radius: 12px; padding: 16px; }
+  .prose .demo p + .row { margin-top: 10px; }
+  .prose .modes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .prose .modes button[aria-pressed=true], .prose .demo button[aria-pressed=true] { background: var(--ink); color: white; }
+  .prose .tag { font: inherit; font-size: 12px; color: var(--mute); margin-inline-start: 6px; }
+  .prose pre.out { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .prose img { max-width: 100%; height: auto; }
+  .docs .side {
+    background: var(--soft);
+    color: var(--ink);
+    margin-top: 40px;
+    padding: 16px 10px;
+    border-radius: 12px;
+  }
+  .docs .side a:hover { background: #eaeaea; color: var(--ink); }
+  .docs .side a[aria-current] { background: #fff; color: var(--ink); }
+  .article-links { margin-bottom: 20px; }
+  .article-links summary { width: fit-content; color: var(--ink); cursor: pointer; }
+  .article-links ul { display: grid; gap: 8px 20px; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); list-style: none; padding: 0; }
+  .docs .prose .article-more { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+  @media (max-width: 820px) {
+    .standalone main { padding-top: 24px; }
+    .docs .side { margin-top: 8px; padding: 8px; }
+    .docs .side nav { border: 0; margin-top: 6px; padding: 4px; }
+    .docs .side .toc-toggle { background: white; color: var(--ink); }
+  }
+  @media (max-width: 520px) {
+    .release-list a { grid-template-columns: 1fr auto; }
+    .release-list a > span { grid-row: 2; grid-column: 1 / -1; }
+  }
+</style>
