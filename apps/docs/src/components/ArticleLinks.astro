@@ -1,0 +1,11 @@
+---
+import { articleLinks } from '../data/articles';
+---
+<details class="article-links">
+  <summary>Related guides</summary>
+  <ul>
+    {articleLinks.map(({ slug, heading }) => (
+      <li><a href={`/${slug}/`}>{heading}</a></li>
+    ))}
+  </ul>
+</details>

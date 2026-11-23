@@ -1,0 +1,5 @@
+---
+import sections from '../data/docs-reference.json';
+const { topic } = Astro.props;
+---
+<Fragment set:html={sections[topic as keyof typeof sections]} />

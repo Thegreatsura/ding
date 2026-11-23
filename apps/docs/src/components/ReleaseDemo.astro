@@ -1,0 +1,11 @@
+---
+const { version } = Astro.props;
+---
+<div id="release-demo" data-version={version}></div>
+<script>
+  const version = document.querySelector<HTMLElement>('#release-demo')?.dataset.version;
+  if (version === '0.0.3') void import('../changelog-0-0-3');
+  if (version === '0.0.4') void import('../changelog-0-0-4');
+  if (version === '0.0.5') void import('../changelog-0-0-5');
+  if (version === '0.0.6' || version === '0.0.7' || version === '0.0.8') void import('../changelog');
+</script>

@@ -1,0 +1,79 @@
+---
+import Site from '../layouts/Site.astro';
+import home from '../data/home.json';
+---
+<Site {...home} section="home" customIntro>
+  <Fragment set:html={home.body} />
+</Site>
+<script>
+  import { createToaster, mountToaster } from '@yusufceng1z/ding';
+  import { mountSite } from '../site';
+
+  mountToaster();
+  const demoViewport = document.querySelector<HTMLElement>('.tst-viewport')!;
+  demoViewport.classList.add('home-demo-viewport');
+  mountSite(document.querySelector('#main')!);
+
+  const key = 'ding:star-toast-shown-v4';
+  let shown = false;
+  try { shown = sessionStorage.getItem(key) === '1'; } catch { /* Storage can be blocked. */ }
+
+  function showInvite() {
+    if (document.hidden) {
+      document.addEventListener('visibilitychange', showInvite, { once: true });
+      return;
+    }
+    const starToast = createToaster();
+    mountToaster({ store: starToast, theme: 'dark', position: 'bottom-right', labels: { region: 'Support Ding' } });
+    starToast.info('Zero crumbs. One star?', {
+      id: 'github-star',
+      className: 'github-star-toast',
+      action: {
+        label: 'Star on GitHub ↗',
+        onClick: () => {
+          window.open('https://github.com/YusufCeng1z/ding', '_blank', 'noopener,noreferrer');
+        },
+      },
+    });
+    const starSlot = document.querySelector<HTMLElement>('.tst-viewport[aria-label="Support Ding"] .tst-slot')!;
+    const offsetDemo = () => {
+      demoViewport.style.setProperty('--star-offset', `${starSlot.offsetHeight + 8}px`);
+    };
+    offsetDemo();
+    const resize = new ResizeObserver(offsetDemo);
+    resize.observe(starSlot);
+    const unsubscribe = starToast.subscribe(() => {
+      if (starToast.getState().toasts.length) return;
+      resize.disconnect();
+      demoViewport.style.removeProperty('--star-offset');
+      unsubscribe();
+    });
+    try { sessionStorage.setItem(key, '1'); } catch { /* The invitation still works in this page. */ }
+  }
+
+  if (!shown) setTimeout(showInvite, 5000);
+</script>
+
+<style is:global>
+  .home-demo-viewport .export-demo .tst-progress::after { background: linear-gradient(90deg, #867be9, #a2cfff); }
+  .tst-viewport .tst.github-star-toast {
+    --fill: #171717;
+    --on: #f5f5f5;
+    --c: #d8a967;
+    --tst-shadow: 0 6px 18px rgb(0 0 0 / .2);
+    border-color: #383838;
+  }
+  .github-star-toast .tst-action {
+    padding-inline: 10px;
+    border: 1px solid #fff;
+    background: #fff;
+    color: #171717;
+    font-size: 12px;
+  }
+  @media (hover: hover) {
+    .github-star-toast .tst-action:hover { background: #eee; }
+  }
+  .home-demo-viewport[data-position="bottom-right"] .tst-slot {
+    bottom: calc(var(--tst-pad) + env(safe-area-inset-bottom, 0px) + var(--star-offset, 0px));
+  }
+</style>

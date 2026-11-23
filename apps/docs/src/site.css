@@ -120,3 +120,10 @@ footer a{color:var(--ink);text-underline-offset:3px}
 .group .row button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
 .row{align-items:center}
 @media (max-width:520px){.bar{justify-content:flex-start}.nav{gap:2px;flex-wrap:wrap;width:100%}.navlink{padding:8px}.bar .nav .gh{flex:1 0 100%;justify-content:center;margin-top:8px;padding:9px 16px;min-height:40px}}
+
+@media (max-width: 380px) {
+  .home-page main { grid-template-columns: minmax(0, 1fr); }
+  .home-page .install, .home-page .cmd { max-width: 100%; }
+  .home-page .install .seg button { padding-inline: 8px; }
+  .home-page .cmd .codes { min-width: 0; overflow: auto; }
+}

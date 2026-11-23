@@ -77,6 +77,8 @@ Upload `ding-skill.zip` under **Customize → Skills**. [Claude's upload guide](
 
 Render the toaster once, then call `toast` from anywhere.
 
+Guides for [React](https://ding.yusufcengiz.dev/react-toast/), [Svelte](https://ding.yusufcengiz.dev/svelte-toast/), [Vue and Nuxt](https://ding.yusufcengiz.dev/vue-toast/), and [plain JavaScript](https://ding.yusufcengiz.dev/javascript-toast/).
+
 **React**
 
 ```tsx
@@ -356,7 +358,7 @@ pnpm build       # build all packages
 pnpm dev         # docs and demo site
 ```
 
-The docs site lives in `apps/docs`. A machine-readable summary is in [`apps/docs/public/llms.txt`](apps/docs/public/llms.txt).
+The Astro docs site lives in `apps/docs` and requires Node.js 22.23.4 or newer. Run `pnpm --filter docs build` to compile the site and verify its public URLs and SEO metadata. A machine-readable summary is in [`apps/docs/public/llms.txt`](apps/docs/public/llms.txt).
 
 ## License
 

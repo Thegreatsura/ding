@@ -1,8 +1,6 @@
 import './site.css';
-import { showStars } from './stars';
 import { toast, chime } from '@yusufceng1z/ding';
 import { MASCOT } from './mascot';
-import { LOOKS, DEFAULT, restyle, type Look } from './looks';
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -99,12 +97,12 @@ const demos = new Map<string, () => void>([
   ['Sequence', () => [() => toast.loading('Uploading photo…'), () => toast.success('Photo uploaded'), () => toast.error('Sync failed', { description: 'Check your connection' }), () => toast.info('Retrying in 3s')].forEach((f, i) => setTimeout(f, i * 1300))],
 ]);
 
-const GROUPS: [string, string, string[]][] = [
-  ['Status', 'Quick feedback', ['Save', 'Error', 'Warning', 'Info', 'Description']],
-  ['Progress', 'One toast that updates in place', ['Promise', 'Sync', 'Upload', 'Download', 'Order', 'Sequence']],
-  ['Content', 'Avatars, buttons and details', ['Message', 'Meeting', 'Invite', 'Music', 'Copy']],
-  ['Actions', 'Undo, confirm and retry', ['Undo', 'Confirm', 'Update', 'Offline']],
-  ['Sound', 'Hear each cue. Turn on your volume.', ['Success', 'Error', 'Warning', 'Info']],
+const GROUPS: [string, string[]][] = [
+  ['Status', ['Save', 'Error', 'Warning', 'Info', 'Description']],
+  ['Progress', ['Promise', 'Sync', 'Upload', 'Download', 'Order', 'Sequence']],
+  ['Content', ['Message', 'Meeting', 'Invite', 'Music', 'Copy']],
+  ['Actions', ['Undo', 'Confirm', 'Update', 'Offline']],
+  ['Sound', ['Success', 'Error', 'Warning', 'Info']],
 ];
 const SOUND_TYPES = { Success: 'success', Error: 'error', Warning: 'warning', Info: 'info' } as const;
 const POSITIONS = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as const;
@@ -113,8 +111,6 @@ const NAMES: Record<(typeof POSITIONS)[number], string> = {
   'bottom-left': 'Bottom left', 'bottom-center': 'Bottom', 'bottom-right': 'Bottom right',
 };
 const INSTALL = { React: 'npm i @yusufceng1z/ding-react', Svelte: 'npm i @yusufceng1z/ding-svelte', Vue: 'npm i @yusufceng1z/ding-vue', Vanilla: 'npm i @yusufceng1z/ding', shadcn: 'npx shadcn@latest add @ding/ding' } as const;
-const GITHUB = 'https://github.com/YusufCeng1z/ding';
-const GH_ICON = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>';
 
 const h = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...kids: (Node | string)[]) => {
   const n = Object.assign(document.createElement(tag), props);
@@ -145,20 +141,15 @@ export function makeSeg(label: string, names: string[], initial: string, onPick:
     place();
     requestAnimationFrame(() => el.classList.add('ready'));
   });
-  addEventListener('resize', place);
+  new ResizeObserver(place).observe(el);
   return el;
 }
 const link = (href: string, text: string, cls = '') => h('a', { href, className: cls, textContent: text, ...(href.startsWith('http') && { target: '_blank', rel: 'noopener noreferrer' }) });
 
 
-export function mountSite(root: HTMLElement, _adapter?: string) {
+export function mountSite(root: HTMLElement) {
   (window as unknown as { toast: typeof toast }).toast = toast; // for console experiments
   toast.configure({ theme: 'dark', sound: true, held: 'replace' });
-
-  // top bar
-  const gh = link(GITHUB, '', 'gh');
-  gh.innerHTML = `${GH_ICON}<span>Star on GitHub</span>`;
-  const bar = h('div', { className: 'bar' }, h('nav', { className: 'nav', ariaLabel: 'Site' }, link('/docs.html', 'Docs', 'navlink'), link('/playground/', 'Playground', 'navlink'), link('/changelog/', 'What\'s new', 'navlink'), gh));
 
   // install: pick a framework, copy the command
   let fw: keyof typeof INSTALL = 'React';
@@ -194,7 +185,21 @@ export function mountSite(root: HTMLElement, _adapter?: string) {
     });
   });
   const tryIt = h('button', { type: 'button', className: 'primary', textContent: 'Try it' });
-  tryIt.onclick = demos.get('Order')!;
+  const exportTimers: ReturnType<typeof setTimeout>[] = [];
+  tryIt.onclick = () => {
+    exportTimers.splice(0).forEach(clearTimeout);
+    const id = toast.loading('Preparing your export…', { progress: 0, description: 'Collecting assets', className: 'export-demo' });
+    exportTimers.push(
+      setTimeout(() => toast.update(id, { progress: 0.42, description: 'Rendering frames' }), 650),
+      setTimeout(() => toast.update(id, { progress: 0.83, description: 'Packing files' }), 1300),
+      setTimeout(() => toast.update(id, {
+        type: 'success',
+        title: 'Export ready',
+        description: '3 files packed and ready to download.',
+        progress: null,
+      }), 2050),
+    );
+  };
   const mascot = h('button', { type: 'button', className: 'mascot', ariaLabel: 'Ring Ding' });
   mascot.innerHTML = MASCOT;
   // the eyes follow the pointer (skipped under reduced motion)
@@ -229,10 +234,9 @@ export function mountSite(root: HTMLElement, _adapter?: string) {
   const hero = h('div', { className: 'hero' },
     mascot,
     h('h1', { textContent: 'Toasts with real spring physics.' }),
-    h('p', { className: 'tag', textContent: 'One toast that morphs in place. No dependencies. React, Svelte, Vue or plain DOM.' }),
-    h('div', { className: 'actions' }, tryIt),
+    h('p', { className: 'tag', textContent: 'Quick toasts update in place. Works with React, Svelte, Vue, and plain JavaScript.' }),
+    h('div', { className: 'actions' }, tryIt, link('/docs.html', 'Read the docs', 'quiet')),
     h('div', { className: 'install' }, fwSeg, h('div', { className: 'cmd' }, code, copy)),
-    link('/llms.txt', 'llms.txt', 'quiet'),
   );
 
   // settings: the only controls that change the toast itself
@@ -266,37 +270,24 @@ export function mountSite(root: HTMLElement, _adapter?: string) {
     dismiss,
   );
 
-  const groups = GROUPS.map(([name, , items]) =>
-    h('section', { className: 'group' }, h('h2', { textContent: name }), h('div', { className: 'row' }, ...items.map((n) => {
-      const b = h('button', { type: 'button', textContent: n });
-      const fire = name === 'Sound' ? () => chime(SOUND_TYPES[n as keyof typeof SOUND_TYPES]) : demos.get(n)!;
-      b.onclick = () => {
-        fire();
-        b.classList.remove('fired');
-        void b.offsetWidth;
-        b.classList.add('fired'); // brief ink flash: a click is acknowledged even before the toast moves
-      };
-      return b;
-    }))),
-  );
-  // styles: each button restyles every toast on the page with plain CSS variables
-  const SHOWN = ['Default', 'Filled'];
-  let look: Look = DEFAULT;
-  const lookBtns = Object.entries(LOOKS).filter(([n]) => SHOWN.includes(n)).map(([name, next]) => {
-    const b = h('button', { type: 'button', textContent: name });
-    pressed(b, name === 'Default');
-    b.onclick = () => {
-      lookBtns.forEach(([, x]) => pressed(x, x === b));
-      const prev = look;
-      look = next;
-      restyle(prev, next, () => void toast.success('Changes saved', { id: 'look', description: `${name} style`, action: { label: 'Undo', onClick: () => undefined }, duration: 4000 }));
+  function demoButton(name: string, fire: () => void) {
+    const button = h('button', { type: 'button', textContent: name });
+    button.onclick = () => {
+      fire();
+      button.classList.remove('fired');
+      void button.offsetWidth;
+      button.classList.add('fired');
     };
-    return [name, b] as const;
+    return button;
+  }
+
+  const groups = GROUPS.map(([name, items]) => {
+    const buttons = items.map((item) =>
+      demoButton(item, name === 'Sound' ? () => chime(SOUND_TYPES[item as keyof typeof SOUND_TYPES]) : demos.get(item)!));
+    return h('section', { className: 'group' },
+      h('h2', { textContent: name }),
+      h('div', { className: 'row' }, ...buttons),
+    );
   });
-  const more = link('/playground/', 'Build your own →', 'quiet');
-  const styles = h('section', { className: 'group' }, h('h2', { textContent: 'Styles' }), h('div', { className: 'row' }, ...lookBtns.map(([, b]) => b), more));
-  groups.splice(groups.length - 1, 0, styles);
-  const foot = h('footer', {}, 'Made by ', link('https://yusufcengiz.dev', 'yusufcengiz.dev'));
-  root.replaceChildren(h('div', { className: 'page' }, h('a', { className: 'skip', href: '#main', textContent: 'Skip to demos' }), bar, h('main', { id: 'main' }, hero, settings, ...groups), foot));
-  showStars(root);
+  root.replaceChildren(hero, settings, ...groups);
 }

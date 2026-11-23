@@ -1,0 +1,26 @@
+---
+import Site from '../../../layouts/Site.astro';
+import ReleaseDemo from '../../../components/ReleaseDemo.astro';
+import releases from '../../../data/releases.json';
+
+export function getStaticPaths() {
+  return releases.map((release) => ({ params: { version: release.slug }, props: { release } }));
+}
+
+const { release } = Astro.props;
+const title = `Ding ${release.version} — ${release.summary}`;
+const heading = `Ding ${release.version}`;
+const schema = [{
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: title,
+  description: release.description,
+  datePublished: release.date,
+  url: new URL(Astro.url.pathname, Astro.site).href,
+}];
+---
+<Site {title} {heading} description={release.description} {schema} section="release">
+  <p><a href="/changelog/">All releases</a> · <time datetime={release.date}>{release.date}</time></p>
+  <Fragment set:html={release.body} />
+  <ReleaseDemo version={release.version} />
+</Site>

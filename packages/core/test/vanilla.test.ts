@@ -55,6 +55,32 @@ describe('mountToaster', () => {
     expect(viewport().querySelector('[role="alert"]')?.textContent).toContain('Payment failed');
   });
 
+  it('keeps separate stores independently dismissible by keyboard', () => {
+    mount();
+    const secondary = createToaster();
+    const unmountSecondary = mountToaster({
+      store: secondary, position: 'bottom-right', theme: 'dark', labels: { region: 'Secondary' },
+    });
+    try {
+      toast.info('Primary', { duration: 0 });
+      secondary.info('Secondary', { duration: 0 });
+      vi.advanceTimersByTime(500);
+
+      const region = document.querySelector('.tst-viewport[aria-label="Secondary"]')!;
+      expect(region.getAttribute('data-position')).toBe('bottom-right');
+      expect(region.querySelector('.tst-title')?.textContent).toBe('Secondary');
+      expect(viewport().querySelector('.tst-title')?.textContent).toBe('Primary');
+      region.querySelector<HTMLButtonElement>('.tst-close')!.focus();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+
+      expect(secondary.getState().toasts[0]?.phase).toBe('closing');
+      expect(toast.getState().toasts[0]?.phase).toBe('open');
+    } finally {
+      unmountSecondary();
+      secondary.dismiss();
+    }
+  });
+
   it('dismisses a sticky toast from its close button', () => {
     mount();
     const id = toast.error('Boom', { duration: 0 });

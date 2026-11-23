@@ -1,0 +1,67 @@
+---
+title: Style toast notifications with Ding CSS variables
+heading: Style toast notifications with CSS variables
+description: Customize Ding’s toast radius, background, text, and status colors. See global, dark theme, and per-toast CSS examples.
+---
+
+Use CSS variables on Ding’s toast viewport to match your app’s colors and corners. Put the rules in a global stylesheet so they can reach notifications mounted outside your component tree.
+
+## Set the surface and corners
+
+Use a single palette to start. The selector below has enough specificity to override Ding’s injected defaults.
+
+```css
+:root .tst-viewport {
+  --tst-bg: #fff;
+  --tst-fg: #18181b;
+  --tst-radius: 10px;
+  --tst-success: #16724e;
+}
+```
+
+`--tst-bg` and `--tst-fg` control the default surface and text. The success color changes the status icon. Error, warning, and info each have their own variable.
+
+## Match the site theme
+
+Use `light-dark()` when the same toast should have different colors in each mode. Ding’s theme sets which value the toast uses. If your app has its own theme toggle, pass the same theme to the toaster.
+
+```css
+:root .tst-viewport {
+  --tst-bg: light-dark(#fff, #18181b);
+  --tst-fg: light-dark(#18181b, #fafafa);
+  --tst-success: light-dark(#16724e, #86efac);
+}
+```
+
+```js
+toast.configure({ theme: 'dark' });
+```
+
+Use `theme: 'system'` if your app follows the device preference.
+
+## Highlight one kind of notification
+
+A background change can help one workflow stand out. Give an individual toast a `className`, then use `--fill` and `--on` for its surface and foreground.
+
+```js
+toast.success('Export ready', {
+  description: 'Your report is ready to download.',
+  className: 'export-ready',
+});
+```
+
+```css
+.tst-viewport .tst.export-ready {
+  --fill: light-dark(#ecfdf5, #123629);
+  --on: light-dark(#123629, #ecfdf5);
+  --c: var(--on);
+}
+```
+
+Keep the title specific even when the icon and background use a status color. If the toast has an action, check that the label and focus ring are visible on the new surface in both themes.
+
+## Try a palette before shipping it
+
+In the [Ding Playground](/playground/), pick a preset, switch between light and dark, and cycle through the example toasts. Copy the CSS into your global stylesheet and apply any generated JavaScript configuration at startup.
+
+If a color works in the Playground but has no effect in your app, verify that the rule is global and inspect the computed value on `.tst-viewport`. See the [styling reference](/docs.html#styling) for the full list of variables.
